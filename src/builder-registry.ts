@@ -3,6 +3,7 @@ import { builder, Builder } from "@builder.io/react";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import ProductCard from "@/components/ProductCard";
+import ConversionButton from "@/components/ui/ConversionButton";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -194,3 +195,47 @@ Builder.registerComponent(ProductCard, {
 //     ],
 //   },
 // });
+
+// Register ConversionButton component
+Builder.registerComponent(ConversionButton, {
+  name: "ConversionButton",
+  inputs: [
+    {
+      name: "text",
+      type: "string",
+      defaultValue: "Track Conversion",
+      description: "Button text to display"
+    },
+    {
+      name: "amount",
+      type: "number",
+      description: "Optional conversion amount (e.g., 99.99 for $99.99 conversion)"
+    },
+    {
+      name: "variant",
+      type: "string",
+      enum: ["primary", "secondary", "outline"],
+      defaultValue: "primary",
+      description: "Button style variant"
+    },
+    {
+      name: "size",
+      type: "string",
+      enum: ["sm", "md", "lg"],
+      defaultValue: "md",
+      description: "Button size"
+    },
+    {
+      name: "disabled",
+      type: "boolean",
+      defaultValue: false,
+      description: "Whether the button is disabled"
+    },
+    {
+      name: "className",
+      type: "string",
+      description: "Additional CSS classes"
+    }
+  ],
+  description: "A button component that tracks Builder.io conversions when clicked. Can track conversions with or without a specified amount."
+});
