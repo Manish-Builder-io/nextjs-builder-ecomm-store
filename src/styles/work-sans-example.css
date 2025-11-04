@@ -1,0 +1,327 @@
+/* 
+ * Work Sans Font Implementation Example
+ * This file demonstrates how to properly implement Work Sans with unicode-range support
+ * for different languages and font styles in a Next.js project.
+ */
+
+/* 
+ * Work Sans - Latin Normal (100-900 weights)
+ * Covers: Basic Latin, Latin-1 Supplement, Latin Extended-A, Latin Extended-B
+ * Unicode ranges: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-latin-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * Work Sans - Latin Italic (100-900 weights)
+ * Same unicode range as normal, but italic style
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-latin-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * Work Sans - Vietnamese Normal (100-900 weights)
+ * Covers: Vietnamese specific characters
+ * Unicode range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-vietnamese-normal.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9;
+}
+
+/* 
+ * Work Sans - Vietnamese Italic (100-900 weights)
+ * Same Vietnamese unicode range, but italic style
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-vietnamese-italic.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9;
+}
+
+/* 
+ * Work Sans - Cyrillic Normal (100-900 weights)
+ * Covers: Cyrillic characters for Russian, Bulgarian, Serbian, etc.
+ * Unicode range: U+0400-045F, U+0490-0491, U+04C0-04C1, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-cyrillic-normal.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04C0-04C1, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * Work Sans - Cyrillic Italic (100-900 weights)
+ * Same Cyrillic unicode range, but italic style
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-cyrillic-italic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04C0-04C1, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * Work Sans - Greek Normal (100-900 weights)
+ * Covers: Greek and Coptic characters
+ * Unicode range: U+0370-03FF, U+1F00-1FFF
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-greek-normal.woff2') format('woff2');
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+}
+
+/* 
+ * Work Sans - Greek Italic (100-900 weights)
+ * Same Greek unicode range, but italic style
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-greek-italic.woff2') format('woff2');
+  unicode-range: U+0370-03FF, U+1F00-1FFF;
+}
+
+/* 
+ * Work Sans - Devanagari Normal (100-900 weights)
+ * Covers: Hindi, Sanskrit, and other Devanagari script languages
+ * Unicode range: U+0900-097F, U+1CD0-1CFF, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-devanagari-normal.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * Work Sans - Devanagari Italic (100-900 weights)
+ * Same Devanagari unicode range, but italic style
+ */
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/worksans-devanagari-italic.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 
+ * CSS Custom Properties for Work Sans
+ * These can be used throughout your application
+ */
+:root {
+  /* Work Sans font family */
+  --font-work-sans: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* Work Sans font weights */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+}
+
+/* 
+ * Utility classes for Work Sans
+ * These can be used directly in your components
+ */
+.font-work-sans {
+  font-family: var(--font-work-sans);
+}
+
+.font-work-sans-thin {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-thin);
+}
+
+.font-work-sans-extralight {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-extralight);
+}
+
+.font-work-sans-light {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-light);
+}
+
+.font-work-sans-normal {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-normal);
+}
+
+.font-work-sans-medium {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-medium);
+}
+
+.font-work-sans-semibold {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-semibold);
+}
+
+.font-work-sans-bold {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-bold);
+}
+
+.font-work-sans-extrabold {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.font-work-sans-black {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-black);
+}
+
+.font-work-sans-italic {
+  font-family: var(--font-work-sans);
+  font-style: italic;
+}
+
+/* 
+ * Example usage for different text elements
+ */
+.work-sans-heading {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-bold);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.work-sans-body {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-normal);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.work-sans-caption {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-medium);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* 
+ * Responsive font sizes using Work Sans
+ */
+@media (max-width: 768px) {
+  .work-sans-heading {
+    font-size: 1.5rem;
+  }
+  
+  .work-sans-body {
+    font-size: 0.9rem;
+  }
+  
+  .work-sans-caption {
+    font-size: 0.8rem;
+  }
+}
+
+/* 
+ * Example of how to override existing HelveticaNeue with Work Sans
+ * This can be used to gradually migrate from HelveticaNeue to Work Sans
+ */
+.typography-body-2 {
+  font-family: var(--font-work-sans) !important;
+  font-weight: var(--font-weight-normal);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.typography-heading-1 {
+  font-family: var(--font-work-sans) !important;
+  font-weight: var(--font-weight-bold);
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+.typography-heading-2 {
+  font-family: var(--font-work-sans) !important;
+  font-weight: var(--font-weight-semibold);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.typography-heading-3 {
+  font-family: var(--font-work-sans) !important;
+  font-weight: var(--font-weight-semibold);
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+/* 
+ * Example of multilingual text support
+ * The unicode-range will automatically select the appropriate font file
+ */
+.multilingual-example {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-normal);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* 
+ * Example of how to use Work Sans in Builder.io symbols
+ * These classes can be applied to Builder.io components
+ */
+.builder-typography-work-sans {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-normal);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.builder-heading-work-sans {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-bold);
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.builder-caption-work-sans {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-weight-medium);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
