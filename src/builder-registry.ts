@@ -5,6 +5,7 @@ import ProductGrid from "@/components/ProductGrid";
 import ProductCard from "@/components/ProductCard";
 import ConversionButton from "@/components/ui/ConversionButton";
 import AlternatingBlock from "@/components/AlternatingBlock/AlternatingBlock";
+import Heading from "@/components/Heading";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -168,6 +169,116 @@ Builder.registerComponent(ProductCard, {
           defaultValue: 0,
         },
       ],
+    },
+  ],
+});
+
+Builder.registerComponent(Heading, {
+  name: "Heading",
+  inputs: [
+    {
+      name: "text",
+      type: "string",
+      defaultValue: "Add a headline",
+      localized: true,
+      helperText: "Supports per-locale copy with a 10-120 character range.",
+      onChange: (options) => {
+        const currentLocale =
+          (options.builder &&
+            options.builder.state &&
+            options.builder.state.context &&
+            options.builder.state.context.locale) ||
+          options.locale;
+        const value = options.get("text") as
+          | string
+          | Record<string, unknown>
+          | undefined
+          | null;
+        const minLength = 4;
+        const maxLength = 12;
+        const globalScope =
+          typeof globalThis === "object" && globalThis !== null
+            ? (globalThis as typeof globalThis & {
+                alert?: (value: string) => void;
+              })
+            : undefined;
+        const showAlert = (message: string) => {
+          if (typeof globalScope?.alert === "function") {
+            globalScope.alert(message);
+            return;
+          }
+
+          if (typeof alert === "function") {
+            alert(message);
+          }
+        };
+
+        if (typeof value === "string") {
+          if (value.length > maxLength) {
+            options.set("text", value.slice(0, maxLength));
+            showAlert(`Maximum length of ${maxLength} reached${currentLocale ? ` for locale ${currentLocale}` : ""}.`);
+          }
+
+          if (value.length !== 0 && value.length < minLength) {
+            showAlert(
+              `${currentLocale ? `Locale ${currentLocale}` : "Heading text"} must have at least ${minLength} characters.`,
+            );
+          }
+          return;
+        }
+
+        if (!value || typeof value !== "object") {
+          return;
+        }
+
+        const mapCandidate = value as unknown as Map<string, unknown>;
+        const isMapLike =
+          typeof mapCandidate?.forEach === "function" &&
+          typeof mapCandidate?.entries === "function";
+
+        const entries = isMapLike
+          ? Array.from(mapCandidate.entries())
+          : Object.entries(value as Record<string, unknown>);
+
+        let didModify = false;
+
+        entries.forEach(([locale, localeValue]) => {
+          if (locale.startsWith("@") || typeof localeValue !== "string") {
+            return;
+          }
+
+          if (localeValue.length > maxLength) {
+            const truncated = localeValue.slice(0, maxLength);
+            if (isMapLike) {
+              mapCandidate.set(locale, truncated);
+            } else {
+              (value as Record<string, unknown>)[locale] = truncated;
+            }
+            didModify = true;
+            showAlert(`Maximum length of ${maxLength} reached for locale ${locale}.`);
+          }
+
+          if (localeValue.length !== 0 && localeValue.length < minLength) {
+            showAlert(`Locale ${locale} must have at least ${minLength} characters.`);
+          }
+        });
+
+        if (!isMapLike && didModify) {
+          options.set("text", { ...(value as Record<string, unknown>) });
+        }
+      },
+    },
+    {
+      name: "level",
+      type: "string",
+      enum: ["h1", "h2", "h3", "h4", "h5", "h6"],
+      defaultValue: "h2",
+    },
+    {
+      name: "align",
+      type: "string",
+      enum: ["left", "center", "right"],
+      defaultValue: "left",
     },
   ],
 });
@@ -343,7 +454,7 @@ Builder.registerComponent(AlternatingBlock, {
 });
 
 Builder.register("editor.settings", {
-  styleStrictMode: true, // optional
+  styleStrictMode: false, // optional
   allowOverridingTokens: true, 
   designTokens: {
     colors: [

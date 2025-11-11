@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-  const builderModelName = "health-sem-page";
+  const builderModelName = "homepage";
 
 
   try {
@@ -20,7 +20,7 @@ export default async function Page(props: PageProps) {
       .get(builderModelName, {
         userAttributes: {
           // Use the page path specified in the URL to fetch the content
-          urlPath: "/" + ((await props?.params)?.page?.join("/") || ""),
+          urlPath: "/landing",
         },
         includeUnpublished: true
       })
