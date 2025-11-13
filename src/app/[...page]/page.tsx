@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-  const builderModelName = "health-sem-page";
+  const builderModelName = "page";
 
 
   try {
