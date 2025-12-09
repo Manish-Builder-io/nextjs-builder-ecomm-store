@@ -22,10 +22,12 @@ export default async function Page(props: PageProps) {
           // Use the page path specified in the URL to fetch the content
           urlPath: "/" + ((await props?.params)?.page?.join("/") || ""),
         },
-        includeUnpublished: true
       })
       // Convert the result to a promise
       .toPromise();
+
+    console.log("🚀 ~ Page ~ content:", content);
+
 
 
     return (
