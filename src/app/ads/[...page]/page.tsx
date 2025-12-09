@@ -1,8 +1,8 @@
 import { builder } from "@builder.io/sdk";
-import { RenderBuilderContent } from "../../components/builder";
+import { RenderBuilderContent } from "../../../components/builder";
 
 // Builder Public API Key set in .env file
-builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
+builder.init("3a5958f65346417f9899d3c37529e3c7");
 
 interface PageProps {
   params: Promise<{
@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-  const builderModelName = "page";
+  const builderModelName = "product-listing-ad";
 
 
   try {
@@ -20,14 +20,11 @@ export default async function Page(props: PageProps) {
       .get(builderModelName, {
         userAttributes: {
           // Use the page path specified in the URL to fetch the content
-          urlPath: "/" + ((await props?.params)?.page?.join("/") || ""),
+          urlPath: "/ads/" + ((await props?.params)?.slug?.join("/") || ""),
         },
       })
       // Convert the result to a promise
       .toPromise();
-
-    console.log("🚀 ~ Page ~ content:", content);
-
 
 
     return (
@@ -40,8 +37,8 @@ export default async function Page(props: PageProps) {
     console.error('Error fetching Builder content:', error);
     return (
       <>
-        {/* Render the Builder page with null content to trigger 404 */}
-        <RenderBuilderContent content={null} model={builderModelName} />
+        {/* Render the Builder page with undefined content to trigger 404 */}
+        <RenderBuilderContent content={undefined} model={builderModelName} />
       </>
     );
   }

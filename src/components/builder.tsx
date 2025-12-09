@@ -1,8 +1,9 @@
 "use client";
 import { ComponentProps } from "react";
-import { BuilderComponent, useIsPreviewing, Builder } from "@builder.io/react";
+import { BuilderComponent, useIsPreviewing, Builder, BuilderContent } from "@builder.io/react";
 import { builder } from "@builder.io/sdk";
 import DefaultErrorPage from "next/error";
+import '@builder.io/widgets';
 import "../builder-registry";
 
 type BuilderPageProps = ComponentProps<typeof BuilderComponent>;
@@ -10,6 +11,7 @@ type BuilderPageProps = ComponentProps<typeof BuilderComponent>;
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
+builder.setUserAttributes({accountsId: "5"});
 
 export function RenderBuilderContent({ content, model, locale  }: BuilderPageProps) {
   // Call the useIsPreviewing hook to determine if
@@ -25,12 +27,24 @@ export function RenderBuilderContent({ content, model, locale  }: BuilderPagePro
   if (content || isPreviewing) {
     try {
       return (
-        <BuilderComponent 
-          content={content} 
-          model={model} 
-          options={{ enrich: true }} 
-          locale={locale}
-        />
+        <BuilderContent key={content?.id} model="page" content={content} options={{enrich: true}}>
+          {(data, loading, fullContent) => {
+            if (loading) {
+              return <h1>Loading...</h1>;
+            }
+            return (
+              <BuilderComponent 
+                content={fullContent} 
+                model={model} 
+                options={{ enrich: true }} 
+                locale={locale}
+                data={{
+                  content: fullContent
+                }}
+              />
+            );
+          }}
+        </BuilderContent>
       );
     } catch (error) {
       console.error('Builder component error:', error);
