@@ -8,6 +8,7 @@ import AlternatingBlock from "@/components/AlternatingBlock/AlternatingBlock";
 import Heading from "@/components/Heading";
 import HeaderV1 from "@/components/Header-V1";
 import ExploreColleges from "@/components/ExploreColleges";
+import ValidationTestComponent from "@/components/ValidationTestComponent";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -399,30 +400,28 @@ Builder.registerComponent(Heading, {
   ],
 });
 
-// Builder.register("editor.settings", {
-//   designTokens: {
-//     colors: [
-//       { name: "Black", value: "#000000" },
-//       { name: "White", value: "#FFFFFF" },
-//       { name: "Primary", value: "var(--color-primary)" },
-//       { name: "Primary Light", value: "var(--color-primary-light)" },
-//       { name: "Primary Dark", value: "var(--color-primary-dark)" },
-//       { name: "Secondary", value: "var(--color-secondary)" },
-//       { name: "Secondary Light", value: "var(--color-secondary-light)" },
-//       { name: "Secondary Dark", value: "var(--color-secondary-dark-mode-version-of-primary)" },
-//     ],
-//     fontFamily: [
-//       { name: "Primary Font", value: "var(--font-family-base)" },
-//       { name: "Callout Font", value: "var(--font-family-callout)" },
-//     ],
-//     fontSize: [
-//       { name: "Base Font Size", value: "var(--font-size-base)" },
-//       { name: "Large Font Size", value: "var(--font-size-large)" },
-//       { name: "Small Font Size", value: "var(--font-size-small)" },
-//       { name: "Callout Font Size", value: "var(--font-size-callout)" },
-//     ],
-//   },
-// });
+
+
+Builder.register("editor.settings", {
+  styleStrictMode: true, // optional
+  designTokensOptional: true,
+  allowOverridingTokens: true,
+  designTokens: {
+    colors: [
+      { name: "Brand Red", value: "var(--red, #ff0000)" },
+      { name: "Brand Blue", value: "rgba(93, 150, 255, 1)" },
+    ],
+    spacing: [
+      { name: "Large", value: "var(--space-large, 20px)" },
+      { name: "Small", value: "var(--space-small, 10px)" },
+      { name: "Tiny", value: "5px" },
+    ],
+    fontFamily: [
+      { name: 'Serif Font', value: 'var(--serif-font, Times, serif)' },
+      { name: 'Primary Font', value: 'Roboto, sans-serif' },
+    ]
+  },
+});
 
 // Register ConversionButton component
 Builder.registerComponent(ConversionButton, {
@@ -930,4 +929,106 @@ Builder.registerComponent("stringInputToBeValidated", {
         },
       },
     ],
+});
+
+// Register ValidationTestComponent - Tests scenarios 1, 2, 3, and 4
+Builder.registerComponent(ValidationTestComponent, {
+  name: "ValidationTestComponent",
+  friendlyName: "Validation Test Component",
+  description: "Component to test Builder.io validation issues: hidden required fields, nested objects/arrays validation, client-side validation bypass, and URL validation",
+  inputs: [
+    // Scenario 1: Hidden required field - should NOT be treated as mandatory when hidden
+    {
+      name: "hiddenRequiredField",
+      type: "string",
+      required: true,
+      hideFromUI: true,
+      defaultValue: "",
+      helperText: "⚠️ TEST SCENARIO 1: This field is required but hidden. It should NOT be treated as mandatory when hidden.",
+    },
+    // Scenario 2: Nested object with required fields - should validate when "Enforce custom component validation" is enabled
+    {
+      name: "nestedObject",
+      type: "object",
+      required: false,
+      helperText: "⚠️ TEST SCENARIO 2: Nested object with required sub-fields. Should validate when feature flag is enabled.",
+      subFields: [
+        {
+          name: "name",
+          type: "string",
+          required: true,
+          helperText: "Required field in nested object",
+        },
+        {
+          name: "email",
+          type: "string",
+          required: true,
+          helperText: "Required email field in nested object",
+        },
+        {
+          name: "url",
+          type: "url",
+          required: false,
+          helperText: "Optional URL field in nested object",
+        },
+      ],
+    },
+    // Scenario 2: Array with required fields - should validate when "Enforce custom component validation" is enabled
+    {
+      name: "items",
+      type: "list",
+      defaultValue: [],
+      helperText: "⚠️ TEST SCENARIO 2: Array with required sub-fields. Should validate when feature flag is enabled.",
+      subFields: [
+        {
+          name: "title",
+          type: "string",
+          required: true,
+          helperText: "Required title field in array item",
+        },
+        {
+          name: "description",
+          type: "string",
+          required: true,
+          helperText: "Required description field in array item",
+        },
+        {
+          name: "link",
+          type: "url",
+          required: false,
+          helperText: "Optional URL field in array item",
+        },
+      ],
+    },
+    // Scenario 3: Required field - should prevent publishing from content list if empty
+    {
+      name: "requiredTitle",
+      type: "string",
+      required: true,
+      helperText: "⚠️ TEST SCENARIO 3: This required field should prevent publishing from content list if empty. Currently validation is client-side only.",
+    },
+    // Scenario 4: URL field - testing "#" validation issue
+    {
+      name: "testUrl",
+      type: "url",
+      required: false,
+      defaultValue: "#",
+      helperText: "⚠️ TEST SCENARIO 4: URL field. Previously '#' was valid, now it seems invalid. Try entering '#' to test.",
+    },
+    // Conditional visibility control
+    {
+      name: "showAdvancedFields",
+      type: "boolean",
+      defaultValue: false,
+      helperText: "Toggle to show/hide advanced fields",
+    },
+    // Advanced nested field - conditionally visible
+    {
+      name: "advancedNestedField",
+      type: "string",
+      required: true,
+      showIf: (options) => options.get("showAdvancedFields") === true,
+      helperText: "⚠️ TEST SCENARIO 1: This field is required but only visible when 'Show Advanced Fields' is true. Should NOT be treated as mandatory when hidden.",
+    },
+  ],
 });
