@@ -403,7 +403,7 @@ Builder.registerComponent(Heading, {
 
 
 Builder.register("editor.settings", {
-  styleStrictMode: true, // optional
+  styleStrictMode: false, // optional
   designTokensOptional: true,
   allowOverridingTokens: true,
   designTokens: {
@@ -1032,3 +1032,17 @@ Builder.registerComponent(ValidationTestComponent, {
     },
   ],
 });
+
+Builder.register('editor.settings', {
+  disableOverflowButtons: ['delete'], // Disables buttons in the overflow menu next to Publish
+  // disableOverflowButtons can be one of 
+  // ['archive', 'duplicate', 'move', 'copy', 'globalSymbol', 'share', 'exportToPdf', 'getCode', 'fiddle', 'delete']
+})
+
+
+Builder.register('insertMenu', {
+  name: 'Our components',
+  items: [
+    { name: 'Core:Canvas', item: '' },
+  ],
+})

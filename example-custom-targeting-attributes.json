@@ -1,0 +1,30 @@
+{
+  "customTargetingAttributes": [
+    {
+      "name": "userSegment",
+      "type": "enum",
+      "enum": ["premium", "standard", "basic", "trial"]
+    },
+    {
+      "name": "userRole",
+      "type": "enum",
+      "enum": ["admin", "editor", "viewer", "guest"]
+    },
+    {
+      "name": "subscriptionTier",
+      "type": "enum",
+      "enum": ["enterprise", "professional", "starter"]
+    },
+    {
+      "name": "region",
+      "type": "enum",
+      "enum": ["us", "eu", "asia", "global"]
+    },
+    {
+      "name": "accountStatus",
+      "type": "enum",
+      "enum": ["active", "inactive", "suspended", "pending"]
+    }
+  ]
+}
+

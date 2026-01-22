@@ -1,0 +1,733 @@
+{
+  "name": "Builder CMS",
+  "kind": "cms",
+  "id": "db60bf3db7fa4db7be81ef05b72bd720",
+  "createdDate": 1729604989487,
+  "intent": "integrate",
+  "ecommerceBackend": "none",
+  "@version": 7,
+  "ownerId": "db60bf3db7fa4db7be81ef05b72bd720",
+  "parentOrganization": "030bae2c9be44986ab94cb0ff3327e0a",
+  "type": "space",
+  "hasIntegrated": "remote",
+  "fonts": {
+    "customFonts": [
+      {
+        "category": "sans-serif",
+        "family": "MotionPicture",
+        "fileUrl": "https://cdn.builder.io/o/assets%2Fdb60bf3db7fa4db7be81ef05b72bd720%2F77e9959ed1ef49e489a1981a04903b62?alt=media&token=7629517f-5e7d-411d-8050-47bb7478d941&apiKey=db60bf3db7fa4db7be81ef05b72bd720"
+      }
+    ]
+  },
+  "subscription": "cms:v2:enterprise-internal",
+  "breakpoints": {
+    "small": 993,
+    "medium": 1279
+  },
+  "roles": [
+    {
+      "id": "contributor",
+      "name": "Contributor",
+      "description": "Can edit basic fields (e.g. text, images), but can't add, remove, or move blocks",
+      "globalFilters": {},
+      "options": {
+        "read": true,
+        "viewOnly": false,
+        "create": true,
+        "publish": true,
+        "editCode": false,
+        "editDesigns": false,
+        "admin": false,
+        "editLayouts": false,
+        "editLayers": false,
+        "editContentPriority": true,
+        "editFolders": false,
+        "editProjects": false,
+        "modifyMcpServers": false,
+        "modifyProjectSettings": false,
+        "connectCodeRepository": false,
+        "createProjects": false,
+        "indexDesignSystems": false
+      },
+      "models": "all",
+      "projects": "all",
+      "environment": {
+        "pushAllowedOrgIds": [],
+        "sync": true,
+        "canPushToAllOrgs": true
+      },
+      "locales": {
+        "allowedLocalesEditList": [],
+        "canEditAllLocales": true
+      }
+    },
+    {
+      "id": "editor",
+      "name": "Editor",
+      "description": "Can edit content (e.g. add, remove, edit blocks), but can't edit designs or styling",
+      "globalFilters": {},
+      "options": {
+        "read": true,
+        "viewOnly": false,
+        "create": true,
+        "publish": true,
+        "editCode": false,
+        "editDesigns": false,
+        "admin": false,
+        "editLayouts": true,
+        "editLayers": false,
+        "editContentPriority": true,
+        "editFolders": true,
+        "editProjects": false,
+        "modifyMcpServers": false,
+        "modifyProjectSettings": false,
+        "connectCodeRepository": false,
+        "createProjects": false,
+        "indexDesignSystems": false
+      },
+      "models": "all",
+      "projects": "all",
+      "environment": {
+        "pushAllowedOrgIds": [],
+        "sync": true,
+        "canPushToAllOrgs": true
+      },
+      "locales": {
+        "allowedLocalesEditList": [],
+        "canEditAllLocales": true
+      }
+    },
+    {
+      "id": "creator",
+      "name": "Designer",
+      "description": "Can create and edit content and designs",
+      "globalFilters": {},
+      "options": {
+        "read": true,
+        "viewOnly": false,
+        "create": false,
+        "publish": true,
+        "editCode": false,
+        "editDesigns": false,
+        "admin": false,
+        "editLayouts": false,
+        "editLayers": true,
+        "editContentPriority": true,
+        "editFolders": false,
+        "editProjects": false,
+        "modifyMcpServers": false,
+        "modifyProjectSettings": false,
+        "connectCodeRepository": false,
+        "createProjects": true,
+        "indexDesignSystems": false
+      },
+      "models": "all",
+      "projects": "all",
+      "environment": {
+        "pushAllowedOrgIds": [],
+        "sync": true,
+        "canPushToAllOrgs": true
+      },
+      "locales": {
+        "allowedLocalesEditList": [],
+        "canEditAllLocales": true
+      }
+    },
+    {
+      "id": "developer",
+      "name": "Developer",
+      "description": "Can create and edit content and designs, and edit code and models",
+      "globalFilters": {},
+      "options": {
+        "read": true,
+        "viewOnly": false,
+        "create": true,
+        "publish": true,
+        "editCode": true,
+        "editDesigns": true,
+        "admin": false,
+        "editLayouts": true,
+        "editLayers": true,
+        "editContentPriority": true,
+        "editFolders": true,
+        "editProjects": true,
+        "modifyMcpServers": true,
+        "modifyProjectSettings": true,
+        "connectCodeRepository": true,
+        "createProjects": true,
+        "indexDesignSystems": true
+      },
+      "models": "all",
+      "projects": "all",
+      "environment": {
+        "pushAllowedOrgIds": [],
+        "sync": true,
+        "canPushToAllOrgs": true
+      },
+      "locales": {
+        "allowedLocalesEditList": [],
+        "canEditAllLocales": true
+      }
+    },
+    {
+      "id": "admin",
+      "name": "Admin",
+      "description": "Can do everything including managing users and payment",
+      "globalFilters": {},
+      "options": {
+        "read": true,
+        "viewOnly": false,
+        "create": true,
+        "publish": true,
+        "editCode": true,
+        "editDesigns": true,
+        "admin": true,
+        "editLayouts": true,
+        "editLayers": true,
+        "editContentPriority": true,
+        "editFolders": true,
+        "editProjects": true,
+        "modifyMcpServers": true,
+        "modifyProjectSettings": true,
+        "connectCodeRepository": true,
+        "createProjects": true,
+        "indexDesignSystems": true
+      },
+      "models": "all",
+      "projects": "all",
+      "environment": {
+        "pushAllowedOrgIds": [],
+        "sync": true,
+        "canPushToAllOrgs": true
+      },
+      "locales": {
+        "allowedLocalesEditList": [],
+        "canEditAllLocales": true
+      }
+    }
+  ],
+  "publishRules": [
+    {
+      "applyToAllModels": false,
+      "id": "590fc3503bb8426da56da268d859d884",
+      "approvers": [
+        "xStHbrbPN3W3WbSIHaJK1oGoFHG2"
+      ],
+      "query": {
+        "data.title": {
+          "$regex": "^West",
+          "$options": "i"
+        }
+      },
+      "name": "Page Title Rule",
+      "active": true,
+      "description": "Page Title Rule",
+      "models": [
+        "page"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "name": "Page Rule",
+      "applyToAllModels": false,
+      "active": true,
+      "stages": [
+        {
+          "name": "New",
+          "rules": [
+            "590fc3503bb8426da56da268d859d884"
+          ],
+          "admins": {
+            "scope": "customList",
+            "customList": [
+              "admin"
+            ]
+          },
+          "editors": {
+            "scope": "customList",
+            "customList": [
+              "admin"
+            ]
+          },
+          "id": "2714e9ddf5a34a69a8354e8e38eb2f7b"
+        },
+        {
+          "rules": [
+            "590fc3503bb8426da56da268d859d884"
+          ],
+          "color": "rgba(75, 98, 230, 1)",
+          "chain": {
+            "scope": "all"
+          },
+          "editors": {
+            "customList": [
+              "admin"
+            ],
+            "scope": "customList"
+          },
+          "admins": {
+            "customList": [
+              "admin"
+            ],
+            "scope": "all"
+          },
+          "description": "Page title should starts with W",
+          "name": "Draft",
+          "id": "1ca5583033d747feb5d31f169f5d220f"
+        },
+        {
+          "name": "Completed",
+          "admins": {
+            "scope": "customList",
+            "customList": [
+              "admin"
+            ]
+          },
+          "rules": [
+            "590fc3503bb8426da56da268d859d884"
+          ],
+          "id": "7f7cce796dfd4b82af50eab747ca7eb9",
+          "description": "Final step in process and content is ready to be published.",
+          "editors": {
+            "scope": "customList",
+            "customList": [
+              "admin"
+            ]
+          },
+          "color": "rgba(34, 187, 54, 1)",
+          "chain": {
+            "scope": "none"
+          }
+        }
+      ],
+      "id": "007da04649194f82b250ba05f72f09c6",
+      "owners": [
+        "xStHbrbPN3W3WbSIHaJK1oGoFHG2",
+        "admin"
+      ],
+      "models": [
+        "page"
+      ]
+    }
+  ],
+  "totalBytesStored": 8553203,
+  "subscriptionSettings": "{\"features\":{\"sso\":true}}",
+  "loadPlugins": [
+    "algolia",
+    "@builder.io/plugin-algolia",
+    "http://localhost:1268/plugin.system.js?pluginId=@aventiv/builder"
+  ],
+  "customTargetingAttributes": {
+    "userLoggedIn": {
+      "type": "boolean"
+    },
+    "locale": {
+      "groups": {},
+      "type": "string",
+      "enum": [
+        "en-US",
+        "ca-ES",
+        "fr-FR"
+      ],
+      "descriptions": [
+        {
+          "description": "English (United States)",
+          "name": "en-US"
+        },
+        {
+          "description": "Catalan (Spain)",
+          "name": "ca-ES"
+        },
+        {
+          "name": "fr-FR",
+          "description": "French (France)"
+        }
+      ]
+    },
+    "audience": {
+      "type": "string"
+    },
+    "location": {
+      "type": "enum",
+      "enum": [
+        "US",
+        "UK",
+        "IN",
+        "FR",
+        "CA"
+      ]
+    },
+    "productTags": {
+      "type": "Tags"
+    },
+    "users": {
+      "enum": [
+        "admin",
+        "developers",
+        "editors",
+        "designers"
+      ],
+      "type": "string"
+    },
+    "accountsId": {
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    }
+  },
+  "settings": {
+    "apps": {
+      "Postscript": {},
+      "Klaviyo": {},
+      "Stamped_io": {},
+      "Rebuy": {},
+      "Yotpo": {}
+    },
+    "swatchColors": [
+      "rgba(2, 53, 208, 1)",
+      "#F5A623",
+      "black",
+      "rgba(223, 28, 28, 1)",
+      "rgba(26, 235, 57, 1)",
+      "rgba(180, 177, 177, 1)"
+    ],
+    "onlyAllowSwatchColors": false,
+    "enableModelValidationHooks": false,
+    "enableOrgInsights": false,
+    "enableBuilderHosting": false,
+    "allowLegacyPlanSubscriptions": false,
+    "enforceMaxUsers": false,
+    "ssoRestrictedMode": false,
+    "isUserPluginIntegrationRequestGranted": false,
+    "showApiModelNameMismatchErrorDialog": false,
+    "allowMarginEditing": false,
+    "showSitePreviewTab": true,
+    "mediaFolders": [
+      {
+        "id": "61691c430bfc4d7aa69a1a746dd3ecdb",
+        "name": "Icons",
+        "parentFolder": ""
+      }
+    ],
+    "useDefaultMargins": false,
+    "plugins": {
+      "@builder.io/plugin-algolia": {
+        "algoliaKey": "897667d3abc3298833629fc1d945bc10",
+        "algoliaAppId": "QOI8PNAZXG",
+        "hasConnected": true
+      },
+      "@builder.io/plugin-phrase-connector": {
+        "userName": "manish.testing",
+        "hasConnected": true,
+        "password": "Hello@Builder2025"
+      },
+      "rich-text-plugin": {
+        "apiKey": "db60bf3db7fa4db7be81ef05b72bd720",
+        "models": "images-data",
+        "hasConnected": true
+      }
+    },
+    "useDefaultStyles": true,
+    "allowMultipleUrls": false,
+    "allowHeadersForGetRequests": true,
+    "allowBuiltInComponents": true,
+    "componentsOnlyMode": false,
+    "hideDarkMode": false,
+    "editWebhooksAndValidationHooksPerEnvironment": true,
+    "shopifyPlan": "partner_test",
+    "useDebouncedEdits": true,
+    "editorOnlyUseInheritedFonts": false,
+    "symbolFolders": [
+      {
+        "id": "e8211a2678544ef7b9fdf33460bdcd56",
+        "name": "Symbol Folder"
+      }
+    ],
+    "ssoDefaultRole": "editor",
+    "ssoProviderId": "oidc.oktatestnov",
+    "proxyPreview": false,
+    "customComponents": [
+      "Suspense",
+      "DocsNavMenu",
+      "Expander",
+      "TOC",
+      "Share Icons",
+      "Image API Explorer",
+      "Code Block",
+      "CodeCopy",
+      "CodeSnippets",
+      "CodeSnippetsV2",
+      "Docs Search",
+      "Material Table",
+      "Material Tabs",
+      "Tooltip",
+      "PermaLinkConfig",
+      "Counter",
+      "ProductCard",
+      "EcommerceItem",
+      "Button",
+      "TestParent",
+      "CarouselHero",
+      "CTAComponent",
+      "VerticalSpacer",
+      "Instrumental Card",
+      "Card with image",
+      "Hello World",
+      "PartnerCard",
+      "CallOut",
+      "Section",
+      "My Custom Component",
+      "CTA",
+      "CardComponent",
+      "Tabbed Panel",
+      "Accordion",
+      "MyFunComponent",
+      "ActivityCard",
+      "ImageCard",
+      "DynamicListComponent",
+      "NextImage",
+      "AuthorHero",
+      "ExampleComponent",
+      "TabFields",
+      "Documents",
+      "Hero Banner",
+      "TextHero",
+      "return (function wrapper(anchor, props) {\n    let instance = {};\n    let effect2;\n    let ran = false;\n    block(() => {\n      const source2 = get_source();\n      const component2 = get(source2);\n      if (effect2) {\n        for (var k in instance) delete instance[k];\n        destroy_effect(effect2);\n      }\n      effect2 = branch(() => {\n        if (ran) set_should_intro(false);\n        Object.defineProperties(\n          instance,\n          Object.getOwnPropertyDescriptors(\n            // @ts-expect-error\n            new.target ? new component2(anchor, props) : component2(anchor, props)\n          )\n        );\n        if (ran) set_should_intro(true);\n      });\n    }, EFFECT_TRANSPARENT);\n    ran = true;\n    if (hydrating) {\n      anchor = hydrate_node;\n    }\n    return instance;\n  }).apply(this, arguments)",
+      "Hero Locale Support",
+      "Label",
+      "Faq Section",
+      "Hero",
+      "Testimonial",
+      "SimpleHeroWithCta",
+      "ContactForm",
+      "SublistWithLimit",
+      "PB NavigationBar",
+      "section-margin",
+      "TabsComponent",
+      "LocalizedComponent",
+      "Tabs",
+      "Tile CTA",
+      "Tile Category",
+      "LanguageSwitcher",
+      "TileCTA",
+      "FAQs",
+      "Example component",
+      "Typography",
+      "MainComponent",
+      "Header",
+      "BasicNav",
+      "CustomHero",
+      "TestimonialCarousel",
+      "fiverr:Testimonial",
+      "Bug Demo",
+      "SqlTable",
+      "HydrationTestParent",
+      "Carousel",
+      "Reviews",
+      "HeaderNavigation",
+      "FAQ",
+      "ButtonCTA",
+      "Heading",
+      "Description",
+      "AccordionWithItems",
+      "ProductSelect",
+      "ObjectComponent",
+      "Login Form",
+      "ProductApi",
+      "NumberSelect",
+      "MyCustomComponent",
+      "Attributes",
+      "ImageUploader",
+      "ListWithOnChange",
+      "SeoSection",
+      "Card",
+      "Footer",
+      "Cards",
+      "CustomButton",
+      "TestComponent",
+      "MyColumns",
+      "DynamicColumns",
+      "Products",
+      "LocaleSwitcher",
+      "RowComponent",
+      "ColumnComponent",
+      "TextField",
+      "ImageGallery",
+      "Counterhgvcffcvb",
+      "CloudinaryImage",
+      "CUI:Button",
+      "CUI:Display",
+      "ProductGrid",
+      "ConversionButton",
+      "AccessibleList",
+      "ProductList",
+      "SemanticListContainer",
+      "SemanticListItem",
+      "SimpleList",
+      "RepeaterList",
+      "CleanRepeater",
+      "AlternatingBlock",
+      "123 - ProductCard",
+      "123-ProductCard",
+      "123 - MyColumns",
+      "123MyColumns",
+      "123 My Columns",
+      "123 My  - Columns",
+      "My  - Columns",
+      "My-Columns",
+      "123 My-Columns",
+      "123 Hero",
+      "Visual Copilot Input",
+      "Desktop App Download",
+      "Liquid Ether",
+      "Header-V1",
+      "ExploreColleges",
+      "DigitalEntitlement",
+      "stringInputToBeValidated",
+      "ValidationTestComponent"
+    ],
+    "enforceCustomComponentSubfieldValidation": true
+  },
+  "lastUpdateBy": null,
+  "targetingAttributes": {
+    "userLoggedIn": {
+      "type": "boolean"
+    },
+    "locale": {
+      "groups": {},
+      "type": "string",
+      "enum": [
+        "en-US",
+        "ca-ES",
+        "fr-FR"
+      ],
+      "descriptions": [
+        {
+          "description": "English (United States)",
+          "name": "en-US"
+        },
+        {
+          "description": "Catalan (Spain)",
+          "name": "ca-ES"
+        },
+        {
+          "name": "fr-FR",
+          "description": "French (France)"
+        }
+      ]
+    },
+    "audience": {
+      "type": "string"
+    },
+    "location": {
+      "type": "enum",
+      "enum": [
+        "US",
+        "UK",
+        "IN",
+        "FR",
+        "CA"
+      ]
+    },
+    "productTags": {
+      "type": "Tags"
+    },
+    "users": {
+      "enum": [
+        "admin",
+        "developers",
+        "editors",
+        "designers"
+      ],
+      "type": "string"
+    },
+    "accountsId": {
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    }
+  },
+  "customAttributes": {
+    "userLoggedIn": {
+      "type": "boolean"
+    },
+    "locale": {
+      "groups": {},
+      "type": "string",
+      "enum": [
+        "en-US",
+        "ca-ES",
+        "fr-FR"
+      ],
+      "descriptions": [
+        {
+          "description": "English (United States)",
+          "name": "en-US"
+        },
+        {
+          "description": "Catalan (Spain)",
+          "name": "ca-ES"
+        },
+        {
+          "name": "fr-FR",
+          "description": "French (France)"
+        }
+      ]
+    },
+    "audience": {
+      "type": "string"
+    },
+    "location": {
+      "type": "enum",
+      "enum": [
+        "US",
+        "UK",
+        "IN",
+        "FR",
+        "CA"
+      ]
+    },
+    "productTags": {
+      "type": "Tags"
+    },
+    "users": {
+      "enum": [
+        "admin",
+        "developers",
+        "editors",
+        "designers"
+      ],
+      "type": "string"
+    },
+    "accountsId": {
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    }
+  }
+}
