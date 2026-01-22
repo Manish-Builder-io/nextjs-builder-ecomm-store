@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="turbolinks-visit-control" content="reload">
+  <%= display_meta_tags %>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+
+  <!-- no-JS fallback -->
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  </noscript>
+
+  <!-- Style -->
+  <% unless vite? %>
+    <% if  @disable_inline_css %>
+      <%= stylesheet_pack_tag *[
+        'application',
+        layout_css,
+        page_css
+      ].reject(&:blank?) %>
+    <% else %>
+      <%= stylesheet_pack_tag_inline *[
+        'application',
+        layout_css,
+        page_css
+      ].reject(&:blank?) %>
+    <% end %>
+  <% end %>
+  <!-- End Style -->
+ 
+  <link rel="manifest" href="/manifest.json"/>
+</head>
+<body style="margin:0"
+  data-is-user-signed-in="<%= user_signed_in? %>"
+  data-is-user-email-confirmed="<%= current_user&.confirmed_email? %>"
+>
+  <%= Gon::Base.render_data %>
+  <% if user_signed_in? %>
+    <div class="q-current-user"
+         id="js-current-user"
+         data-id="<%= current_user.id %>"
+         data-login="<%= current_user.login %>"
+         data-email="<%= current_user.email %>"
+         data-name="<%= current_user.name %>"
+         data-subscription-status="<%= current_user.subscription_status %>"
+         data-public-level="<%= current_user.public_level %>"
+         data-type="<%= current_user.is_professor ? 'professor' : 'student' %>"
+         data-created_at="<%= current_user.created_at.iso8601 %>"
+         data-subscription-expire-at="<%= current_user.subscription_expiration&.iso8601 %>"
+         data-segment="<%= user_preferred_product&.name %>"
+         data-previous-experience="<%= current_user.user_preferences&.experience %>"
+         data-carrers="<%= current_user.user_preferences&.preferred_administrative_levels&.map{|level| level.administrative_level.name}&.join(', ') %>"
+         data-avatar="<%= avatar_url(current_user.avatar_id) %>"
+         data-last-subscription-level="<%= current_user&.user_info&.last_subscription_level %>"
+         data-recurrence="<%= current_user&.info&.active_recurrence ? 'active' : 'inactive' %>"
+         data-last-subscription-duration="<%= current_user&.info&.subscription_period %>"
+         data-is-enrolled="<%= !!current_user&.preferred_study_guide&.id&.present? %>">
+  <% end %>
+  <%= yield %>
+  <script>
+    window.RAILS_ENV = '<%= Rails.env %>';
+  </script>
+  <%= render 'shared/rollbar' %>
+  <%= cdn_script('jquery', '3.3.1', 'jquery.min.js') %>
+  <%= cdn_script('twitter-bootstrap', '3.3.7', 'js/bootstrap.min.js') %>
+  <%= javascript_pack_tag 'builder_io_layout' %>
+  <% unless Rails.env.development? %>
+    <script type="text/javascript"
+            src="/cdn-cgi/zaraz/i.js"
+            referrerpolicy="origin"
+            defer="defer"></script>
+  <% end %>
+</body>
+</html>
+

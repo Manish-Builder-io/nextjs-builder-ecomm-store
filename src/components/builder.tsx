@@ -13,7 +13,7 @@ builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
 builder.setUserAttributes({accountsId: "5"});
 
-export function RenderBuilderContent({ content, model, locale  }: BuilderPageProps) {
+export function RenderBuilderContent({ content, model, locale = "en-US"  }: BuilderPageProps) {
   // Call the useIsPreviewing hook to determine if
   // the page is being previewed in Builder
   const isPreviewing = useIsPreviewing();
