@@ -70,6 +70,7 @@ Builder.registerComponent(ProductGrid, {
       name: "products",
       type: "list",
       defaultValue: [],
+      copyOnAdd: true,
       subFields: [
         {
           name: "id",

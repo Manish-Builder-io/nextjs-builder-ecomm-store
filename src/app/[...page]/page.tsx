@@ -26,9 +26,6 @@ export default async function Page(props: PageProps) {
       // Convert the result to a promise
       .toPromise();
 
-    console.log("🚀 ~ Page ~ content:", content);
-
-
 
     return (
       <>
