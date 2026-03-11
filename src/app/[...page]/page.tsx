@@ -22,11 +22,20 @@ export default async function Page(props: PageProps) {
           // Use the page path specified in the URL to fetch the content
           urlPath: "/" + ((await props?.params)?.page?.join("/") || ""),
         },
+        options: {
+          enrich: true,
+          includeRefs: true,
+          enrichOptions: {
+            enrichLevel: 3,
+          },
+        },
+        enrich: true,
+        includeRefs: true,
       })
       // Convert the result to a promise
       .toPromise();
 
-
+    console.log("🚀 ~ Page ~ content:", content);
     return (
       <>
         {/* Render the Builder page */}
@@ -37,8 +46,8 @@ export default async function Page(props: PageProps) {
     console.error('Error fetching Builder content:', error);
     return (
       <>
-        {/* Render the Builder page with null content to trigger 404 */}
-        <RenderBuilderContent content={null} model={builderModelName} />
+        {/* Render the Builder page with no content to trigger 404 */}
+        <RenderBuilderContent content={undefined} model={builderModelName} />
       </>
     );
   }

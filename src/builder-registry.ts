@@ -1,14 +1,17 @@
-"use client";
+ "use client";
 import { builder, Builder } from "@builder.io/react";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import ProductCard from "@/components/ProductCard";
 import ConversionButton from "@/components/ui/ConversionButton";
+import CoreButton from "@/components/ui/CoreButton";
 import AlternatingBlock from "@/components/AlternatingBlock/AlternatingBlock";
 import Heading from "@/components/Heading";
 import HeaderV1 from "@/components/Header-V1";
 import ExploreColleges from "@/components/ExploreColleges";
 import ValidationTestComponent from "@/components/ValidationTestComponent";
+import VideoPlayer from "@/components/VideoPlayer";
+import RelatedArticles from "@/components/RelatedArticles";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -468,6 +471,57 @@ Builder.registerComponent(ConversionButton, {
   description: "A button component that tracks Builder.io conversions when clicked. Can track conversions with or without a specified amount."
 });
 
+const shopifyHelperText = "This Shopify store \n has a Builder.io account but you are not logged in as a user with access.";
+
+
+
+// Register CoreButton component - overrides the existing Core:Button component
+Builder.registerComponent(CoreButton, {
+  name: "Core:Button",
+  override: true,
+  inputs: [
+    {
+      name: "variant",
+      type: "string",
+      enum: ["primary", "secondary", "outline", "ghost"],
+      defaultValue: "primary",
+      description: "Button style variant",
+      helperText: shopifyHelperText,
+    },
+    {
+      name: "fontSize",
+      type: "string",
+      defaultValue: "16",
+      description: "Font size in pixels"
+    },
+    {
+      name: "text",
+      type: "string",
+      defaultValue: "Find a Clinic",
+      description: "Button text to display"
+    },
+    {
+      name: "link",
+      type: "url",
+      defaultValue: "https://skinlaundry.com/treatments/skintox/#skintox-locations",
+      description: "URL to navigate to when button is clicked"
+    },
+    {
+      name: "target",
+      type: "string",
+      enum: ["_self", "_blank", "_parent", "_top"],
+      defaultValue: "_self",
+      description: "Link target attribute"
+    },
+    {
+      name: "className",
+      type: "string",
+      description: "Additional CSS classes"
+    }
+  ],
+  description: "Core button component with customizable variant, font size, text, and link."
+});
+
 // Register AlternatingBlock component
 Builder.registerComponent(AlternatingBlock, {
   name: "AlternatingBlock",
@@ -709,6 +763,140 @@ Builder.registerComponent(ExploreColleges, {
     },
   ],
   description: "A college search component with search input and filter options.",
+});
+
+// Register VideoPlayer component
+Builder.registerComponent(VideoPlayer, {
+  name: "VideoPlayer",
+  inputs: [
+    {
+      name: "videoType",
+      type: "string",
+      enum: ["hosted internally"],
+      defaultValue: "hosted internally",
+      helperText: "Currently only 'hosted internally' is supported.",
+    },
+    {
+      name: "hostedVideoConfiguration",
+      type: "object",
+      required: true,
+      subFields: [
+        {
+          name: "desktopSrc",
+          type: "file",
+          required: true,
+          helperText: "Desktop video source URL",
+        },
+        {
+          name: "tabletSrc",
+          type: "file",
+          helperText: "Tablet video source URL (optional)",
+        },
+        {
+          name: "mobileSrc",
+          type: "file",
+          helperText: "Mobile video source URL (optional)",
+        },
+        {
+          name: "autoPlay",
+          type: "boolean",
+          defaultValue: true,
+          helperText: "Autoplay video (will be muted when autoplaying).",
+        },
+      ],
+    },
+    {
+      name: "controlColor",
+      type: "string",
+      enum: ["light", "dark"],
+      defaultValue: "light",
+      helperText: "Theme for surrounding text/UI.",
+    },
+    {
+      name: "posterImage",
+      type: "file",
+      helperText: "Poster image displayed before playback.",
+      defaultValue:
+        "https://cdn.builder.io/api/v1/image/assets%2Fd1a786c1a5b54cfc9d2a9230b6012b69%2F614c89300db0430da5cd3f04731cd834",
+    },
+    {
+      name: "posterAlt",
+      type: "string",
+      helperText: "Alt text for the poster image.",
+    },
+    {
+      name: "description",
+      type: "string",
+      helperText: "Optional description shown above the video.",
+    },
+    {
+      name: "showControls",
+      type: "boolean",
+      defaultValue: true,
+      helperText: "Show native video controls.",
+    },
+    {
+      name: "preventMainPlayButtonClick",
+      type: "boolean",
+      defaultValue: false,
+      helperText:
+        "If true, clicking the main video area will not toggle play/pause.",
+    },
+    {
+      name: "showFullscreen",
+      type: "boolean",
+      defaultValue: true,
+      helperText: "If false, hide the fullscreen button where possible.",
+    },
+    {
+      name: "duration",
+      type: "string",
+      helperText:
+        "Optional duration label (e.g. '0:30'); leave empty to hide.",
+    },
+  ],
+  description:
+    "Responsive video player component for internally hosted videos with desktop/tablet/mobile sources.",
+});
+
+Builder.registerComponent(RelatedArticles, {
+  name: "RelatedArticles",
+  friendlyName: "Related Articles",
+  inputs: [
+    {
+      name: "title",
+      friendlyName: "Section Title",
+      type: "string",
+      defaultValue: "Related articles",
+      helperText: "Heading shown above the related articles list.",
+    },
+    {
+      name: "articles",
+      friendlyName: "Related Article List",
+      type: "list",
+      helperText:
+        "Add one or more list items; each item can reference one or more blog articles.",
+      subFields: [
+        {
+          name: "articles",
+          friendlyName: "Articles",
+          type: "reference",
+          model: "blog-articles",
+          helperText:
+            "Select one or more articles from the blog-articles model to feature as related.",
+          options: {
+            allowMultiple: true,
+            enrich: true,
+            enrichOptions: {
+              enrichLevel: 2,
+            },
+          },
+        },
+      ],
+    },
+  ],
+  description:
+    "Displays a list of related blog articles with image, title, blurb, author, and date.",
 });
 
 // Builder.register("editor.settings", {

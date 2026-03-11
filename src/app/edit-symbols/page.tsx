@@ -22,7 +22,7 @@ export default async function Page(props: PageProps) {
   return (
     <>
       {/* Render the Builder page */}
-      <RenderBuilderContent content={content} model={builderModelName} />
+      <RenderBuilderContent content={content} model={builderModelName} data={{ apiBaseUrl:"production-cougars-services-public.profitoptics.com/api", warehouseCode: "GADS"  }} />
     </>
   );
 }
