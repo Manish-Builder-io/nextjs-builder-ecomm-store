@@ -120,7 +120,6 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("Error creating Builder.io content:", error);
     
     return NextResponse.json(
       {

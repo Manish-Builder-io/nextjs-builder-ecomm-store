@@ -12,10 +12,10 @@ const CONTENT_API_KEY = "db60bf3db7fa4db7be81ef05b72bd720";
 const CONTENT_API_BASE = "https://cdn.builder.io/api/v3/content";
 const LOCALIZED_TEXT_VALUE = {
   "@type": "@builder.io/core:LocalizedValue",
-  "Default": "Updated Text Here",
-  "ca-ES": "<p>This is ca-ES text</p>",
-  "en-US": "<p>This is en-US Text</p>",
-  "fr-FR": "<p>This is fr-FR Text</p>",
+  "Default": "Updated New Text Here",
+  "ca-ES": "<p>This is New ca-ES text</p>",
+  "en-US": "<p>This is New en-US Text</p>",
+  "fr-FR": "<p>This is New fr-FR Text</p>",
 };
 
 async function fetchEntry(modelName, entryId) {
@@ -63,14 +63,24 @@ function createLocalizedValue() {
   };
 }
 
+function isLocalizedValue(val) {
+  return (
+    val &&
+    typeof val === "object" &&
+    val["@type"] === "@builder.io/core:LocalizedValue"
+  );
+}
+
 function localizeTextInputs(block) {
   let updated = false;
   const options = block?.component?.options;
+  const compName = block?.component?.name;
 
+  // Any component with string options.text that isn't already a LocalizedValue
   if (
-    block?.component?.name === "Text" &&
     options &&
-    typeof options.text === "string"
+    typeof options.text === "string" &&
+    !isLocalizedValue(options.text)
   ) {
     options.text = createLocalizedValue();
     ensureLocalizationMetadata(block);
@@ -80,6 +90,16 @@ function localizeTextInputs(block) {
   if (Array.isArray(options?.blocks)) {
     const nested = localizeBlocks(options.blocks);
     updated = updated || nested;
+  }
+
+  // Columns: recurse into each column's blocks
+  if (Array.isArray(options?.columns)) {
+    for (const col of options.columns) {
+      if (Array.isArray(col?.blocks)) {
+        const nested = localizeBlocks(col.blocks);
+        updated = updated || nested;
+      }
+    }
   }
 
   return updated;
@@ -94,7 +114,7 @@ function localizeBlocks(blocks) {
 
   for (const block of blocks) {
     const textUpdated = localizeTextInputs(block);
-    const childrenUpdated = localizeBlocks(block.children);
+    const childrenUpdated = localizeBlocks(block?.children);
     hasUpdates = hasUpdates || textUpdated || childrenUpdated;
   }
 

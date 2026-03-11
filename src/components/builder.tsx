@@ -1,6 +1,6 @@
 "use client";
 import { ComponentProps } from "react";
-import { BuilderComponent, useIsPreviewing, Builder, BuilderContent } from "@builder.io/react";
+import { BuilderComponent, useIsPreviewing, Builder } from "@builder.io/react";
 import { builder } from "@builder.io/sdk";
 import DefaultErrorPage from "next/error";
 import '@builder.io/widgets';
@@ -11,7 +11,7 @@ type BuilderPageProps = ComponentProps<typeof BuilderComponent>;
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
-builder.setUserAttributes({accountsId: "5"});
+builder.setUserAttributes({userLoggedIn: true});
 
 export function RenderBuilderContent({ content, model, locale = "en-US"  }: BuilderPageProps) {
   // Call the useIsPreviewing hook to determine if
@@ -27,24 +27,19 @@ export function RenderBuilderContent({ content, model, locale = "en-US"  }: Buil
   if (content || isPreviewing) {
     try {
       return (
-        <BuilderContent key={content?.id} model="page" content={content} options={{enrich: true}}>
-          {(data, loading, fullContent) => {
-            if (loading) {
-              return <h1>Loading...</h1>;
-            }
-            return (
-              <BuilderComponent 
-                content={fullContent} 
-                model={model} 
-                options={{ enrich: true }} 
-                locale={locale}
-                data={{
-                  content: fullContent
-                }}
-              />
-            );
+        <BuilderComponent
+          key={content?.id}
+          content={content}
+          model={model}
+          options={{ includeRefs: true, enrich: true }}
+          locale={locale}
+          data={{
+            title: "Welcome to Our Store",
+            description: "Discover amazing products and great deals. Shop the latest collection with free shipping on orders over $50.",
+            ctaText: "Shop Now",
+            featured: true,
           }}
-        </BuilderContent>
+        />
       );
     } catch (error) {
       console.error('Builder component error:', error);
