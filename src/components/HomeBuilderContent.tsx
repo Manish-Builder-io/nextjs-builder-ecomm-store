@@ -17,6 +17,8 @@ import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import NewsletterSection from "@/components/homepage/NewsletterSection";
 import "../builder-registry";
 
+import "@builder.io/widgets";
+
 const MODEL = "page";
 
 type BuilderContentProp = ComponentProps<typeof BuilderComponent>["content"];
