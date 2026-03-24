@@ -2,7 +2,7 @@ import { builder } from "@builder.io/sdk";
 import { RenderBuilderContent } from "../../../components/builder";
 
 // Builder Public API Key set in .env file
-builder.init("3a5958f65346417f9899d3c37529e3c7");
+builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
 interface PageProps {
   params: Promise<{
@@ -20,7 +20,7 @@ export default async function Page(props: PageProps) {
       .get(builderModelName, {
         userAttributes: {
           // Use the page path specified in the URL to fetch the content
-          urlPath: "/ads/" + ((await props?.params)?.slug?.join("/") || ""),
+          urlPath: "/ads/" + ((await props?.params)?.page?.join("/") || ""),
         },
       })
       // Convert the result to a promise

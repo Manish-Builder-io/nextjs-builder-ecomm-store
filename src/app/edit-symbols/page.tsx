@@ -15,7 +15,12 @@ export default async function Page(props: PageProps) {
 
   const content = await builder
     // Get the page content from Builder with the specified options
-    .get(builderModelName, {})
+    .get(builderModelName, {
+      options: {
+        enrich: true,
+      },
+      enrich: true,
+    })
     // Convert the result to a promise
     .toPromise();
 
