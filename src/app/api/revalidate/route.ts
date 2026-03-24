@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 // Helper to create CORS headers
 function getCorsHeaders() {
@@ -47,48 +47,37 @@ export async function POST(request: NextRequest) {
     console.log("======================");
 
     // Extract common webhook fields
+    // Builder.io webhook payload: body.content.data.url holds the page path
     const eventType = body.type || body.event || headers["x-webhook-event"] || "unknown";
     const modelName = body.modelName || body.model || body.data?.model;
-    const entryId = body.id || body.entryId || body.data?.id;
-    const urlPath = body.urlPath || body.data?.urlPath;
+    const entryId = body.content?.id || body.id || body.entryId || body.data?.id;
+    const urlPath =
+      body.content?.data?.url ||
+      body.content?.data?.urlPath ||
+      body.urlPath ||
+      body.data?.urlPath;
 
     // Optional: Validate webhook signature if provided
     const signature = headers["x-signature"] || headers["x-builder-signature"];
     if (process.env.WEBHOOK_SECRET && signature) {
-      // Add signature validation logic here if needed
       console.log("Signature received:", signature);
     }
 
     // Handle revalidation based on webhook data
     const revalidatedPaths: string[] = [];
-    const revalidatedTags: string[] = [];
 
     // Revalidate specific path if urlPath is provided
     if (urlPath && typeof urlPath === "string") {
-      revalidatePath(urlPath);
+      revalidatePath(urlPath, "page");
       revalidatedPaths.push(urlPath);
       console.log(`Revalidated path: ${urlPath}`);
     }
 
-    // Revalidate model-specific tag if modelName is provided
-    if (modelName && typeof modelName === "string") {
-      revalidateTag(`builder-${modelName}`);
-      revalidatedTags.push(`builder-${modelName}`);
-      console.log(`Revalidated tag: builder-${modelName}`);
-    }
-
-    // Revalidate entry-specific tag if entryId is provided
-    if (entryId && typeof entryId === "string") {
-      revalidateTag(`builder-entry-${entryId}`);
-      revalidatedTags.push(`builder-entry-${entryId}`);
-      console.log(`Revalidated tag: builder-entry-${entryId}`);
-    }
-
-    // If no specific revalidation, revalidate all Builder content
-    if (revalidatedPaths.length === 0 && revalidatedTags.length === 0) {
-      revalidateTag("builder-all");
-      revalidatedTags.push("builder-all");
-      console.log("Revalidated all Builder content");
+    // Always revalidate layout so all pages pick up the change
+    if (revalidatedPaths.length === 0) {
+      revalidatePath("/", "layout");
+      revalidatedPaths.push("/ (layout)");
+      console.log("Revalidated all pages via layout");
     }
 
     // Return success response
@@ -99,7 +88,6 @@ export async function POST(request: NextRequest) {
         eventType,
         revalidated: {
           paths: revalidatedPaths,
-          tags: revalidatedTags,
         },
         received: {
           modelName,
@@ -134,7 +122,6 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const testPath = searchParams.get("path");
-  const testTag = searchParams.get("tag");
 
   if (testPath) {
     revalidatePath(testPath);
@@ -147,22 +134,11 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (testTag) {
-    revalidateTag(testTag);
-    return NextResponse.json({
-      success: true,
-      message: `Revalidated tag: ${testTag}`,
-      timestamp: new Date().toISOString(),
-    }, {
-      headers: getCorsHeaders(),
-    });
-  }
-
   return NextResponse.json({
     message: "Webhook endpoint is active",
     usage: {
       POST: "Send webhook payload to revalidate content",
-      GET: "Test revalidation with ?path=/some-path or ?tag=some-tag",
+      GET: "Test revalidation with ?path=/some-path",
     },
     note: "For Builder.io webhooks, use a public URL (not localhost). Use ngrok or similar for local testing.",
     timestamp: new Date().toISOString(),
