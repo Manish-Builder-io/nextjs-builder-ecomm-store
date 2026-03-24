@@ -71,7 +71,7 @@ export function ValidationTestComponent({
             <p className="text-sm text-gray-500">No nested object provided</p>
           )}
           <p className="text-xs text-red-600 mt-1">
-            ⚠️ Issue: Nested objects and arrays should validate when "Enforce custom component validation" is enabled.
+            ⚠️ Issue: Nested objects and arrays should validate when &quot;Enforce custom component validation&quot; is enabled.
           </p>
         </div>
 
@@ -107,7 +107,7 @@ export function ValidationTestComponent({
             Test URL: {testUrl || "(empty)"}
           </p>
           <p className="text-xs text-red-600 mt-1">
-            ⚠️ Issue: "#" should be a valid URL. Previously it was accepted, now it seems invalid.
+            ⚠️ Issue: &quot;#&quot; should be a valid URL. Previously it was accepted, now it seems invalid.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export function ValidationTestComponent({
               Advanced Field: {advancedNestedField || "(empty)"}
             </p>
             <p className="text-xs text-yellow-600 mt-1">
-              ℹ️ This field is only visible when "Show Advanced Fields" is enabled.
+              ℹ️ This field is only visible when &quot;Show Advanced Fields&quot; is enabled.
             </p>
           </div>
         )}
@@ -128,9 +128,9 @@ export function ValidationTestComponent({
         <h4 className="font-semibold text-sm mb-2">Test Instructions:</h4>
         <ol className="list-decimal list-inside text-xs space-y-1 text-gray-700">
           <li>Try to publish without filling required fields - validation should prevent it</li>
-          <li>Hide the "Hidden Required Field" and verify it's not treated as mandatory</li>
+          <li>Hide the &quot;Hidden Required Field&quot; and verify it&apos;s not treated as mandatory</li>
           <li>Fill nested object/array fields and verify validation works</li>
-          <li>Try entering "#" in the URL field - it should be accepted</li>
+          <li>Try entering &quot;#&quot; in the URL field - it should be accepted</li>
           <li>Try publishing from content list without opening entry - should be blocked</li>
         </ol>
       </div>

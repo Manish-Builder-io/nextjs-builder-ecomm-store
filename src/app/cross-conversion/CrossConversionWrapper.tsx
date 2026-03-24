@@ -21,7 +21,7 @@ const getVariationIdFromCookies = (): string | null => {
       return value;
     }
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -30,16 +30,16 @@ const getVariationIdFromCookies = (): string | null => {
 const getVisitorId = (): string | null => {
   try {
     return localStorage.getItem('builderVisitorId');
-  } catch (error) {
+  } catch {
     return null;
   }
 };
 
 // Helper function to safely store tracking data
-const storeTrackingData = (data: any): void => {
+const storeTrackingData = (data: Record<string, unknown>): void => {
   try {
     localStorage.setItem('builderTrackingData', JSON.stringify(data));
-  } catch (error) {
+  } catch {
     // Silently fail
   }
 };
@@ -113,7 +113,7 @@ export function CrossConversionWrapper({ children }: CrossConversionWrapperProps
       // Navigate to the modified URL
       window.location.href = url.toString();
 
-    } catch (error) {
+    } catch {
       // Silently fail
     } finally {
       // Reset processing flag after a delay to prevent rapid clicks

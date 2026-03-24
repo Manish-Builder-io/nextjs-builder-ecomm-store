@@ -54,7 +54,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const d = article.data ?? {};
 
     // Resolve author
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawAuthor: any = d.author;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const authorSource: any =
       rawAuthor?.data ?? rawAuthor?.value?.data ?? rawAuthor?.value ?? rawAuthor;
     const authorName: string | undefined =

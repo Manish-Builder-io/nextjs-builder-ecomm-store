@@ -22,12 +22,12 @@ interface NavigationItem {
   label?: string;
   href?: string;
   children?: NavigationItem[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface NavigationData {
   items?: NavigationItem[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface HeaderV1Props {
@@ -67,7 +67,7 @@ const HeaderV1: React.FC<HeaderV1Props> = ({
       "@type" in navigation &&
       navigation["@type"] === "@builder.io/core:Reference"
     ) {
-      return navigation.value || null;
+      return (navigation as { "@type": string; value?: NavigationData }).value || null;
     }
 
     // Handle direct navigation object

@@ -4,13 +4,7 @@ import { RenderBuilderContent } from "../components/builder";
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
-interface PageProps {
-  params: Promise<{
-    page: string[];
-  }>;
-}
-
-export default async function Page(props: PageProps) {
+export default async function Page() {
   const builderModelName = "page";
 
 
@@ -41,7 +35,7 @@ export default async function Page(props: PageProps) {
     return (
       <>
         {/* Render the Builder page with null content to trigger 404 */}
-        <RenderBuilderContent content={null} model={builderModelName} />
+        <RenderBuilderContent content={undefined} model={builderModelName} />
       </>
     );
   }

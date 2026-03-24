@@ -51,15 +51,15 @@ const AlternatingBlock: React.FC<AlternatingBlockProps> = ({
     
     // Handle Builder.io reference object
     if (author && typeof author === 'object' && '@type' in author && author['@type'] === '@builder.io/core:Reference') {
-      return author.value || null;
+      return (author as unknown as { value?: AuthorData }).value || null;
     }
-    
+
     // Handle array of authors
     if (Array.isArray(author)) {
       const firstAuthor = author[0];
       // Check if it's a Builder.io reference
       if (firstAuthor && typeof firstAuthor === 'object' && '@type' in firstAuthor && firstAuthor['@type'] === '@builder.io/core:Reference') {
-        return firstAuthor.value || null;
+        return (firstAuthor as unknown as { value?: AuthorData }).value || null;
       }
       return firstAuthor || null;
     }
