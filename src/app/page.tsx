@@ -1,42 +1,23 @@
 import { builder } from "@builder.io/sdk";
-import { RenderBuilderContent } from "../components/builder";
+import HomeBuilderContent from "@/components/HomeBuilderContent";
 
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
 export default async function Page() {
-  const builderModelName = "page";
-
+  let content = null;
 
   try {
-    const content = await builder
-      // Get the page content from Builder with the specified options
-      .get(builderModelName, {
-        userAttributes: {
-          // Use the page path specified in the URL to fetch the content
-          urlPath: "/" ,
-        },
-      })
-      // Convert the result to a promise
-      .toPromise();
-
-    console.log("🚀 ~ Page ~ content:", content);
-
-
-
-    return (
-      <>
-        {/* Render the Builder page */}
-        <RenderBuilderContent content={content} model={builderModelName} />
-      </>
-    );
-  } catch (error) {
-    console.error('Error fetching Builder content:', error);
-    return (
-      <>
-        {/* Render the Builder page with null content to trigger 404 */}
-        <RenderBuilderContent content={undefined} model={builderModelName} />
-      </>
-    );
+    content =
+      (await builder
+        .get("page", {
+          userAttributes: { urlPath: "/" },
+          options: { includeRefs: true, enrich: true },
+        })
+        .toPromise()) ?? null;
+  } catch {
+    // fall through — HomeBuilderContent handles null content
   }
+
+  return <HomeBuilderContent content={content} />;
 }

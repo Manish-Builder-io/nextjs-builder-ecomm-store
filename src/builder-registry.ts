@@ -1,5 +1,12 @@
  "use client";
 import { builder, Builder } from "@builder.io/react";
+import PromoBar from "@/components/homepage/PromoBar";
+import HomeHero from "@/components/homepage/HomeHero";
+import CategorySection from "@/components/homepage/CategorySection";
+import FeaturedProductsSection from "@/components/homepage/FeaturedProductsSection";
+import PromoBanner from "@/components/homepage/PromoBanner";
+import TestimonialsSection from "@/components/homepage/TestimonialsSection";
+import NewsletterSection from "@/components/homepage/NewsletterSection";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import ProductCard from "@/components/ProductCard";
@@ -1319,5 +1326,180 @@ Builder.registerComponent(BlogCard, {
       type: "file",
       friendlyName: "Author Avatar",
     },
+  ],
+});
+
+// ─── Homepage Section Components ───────────────────────────────────────────
+
+Builder.registerComponent(PromoBar, {
+  name: "PromoBar",
+  friendlyName: "Promo Bar",
+  inputs: [
+    {
+      name: "message",
+      type: "string",
+      defaultValue: "✨ Free shipping on orders over $50 · New Arrivals Just Dropped",
+    },
+    {
+      name: "linkText",
+      type: "string",
+      defaultValue: "Shop Now →",
+    },
+    {
+      name: "linkHref",
+      type: "url",
+      defaultValue: "/collections/all",
+    },
+  ],
+});
+
+Builder.registerComponent(HomeHero, {
+  name: "HomeHero",
+  friendlyName: "Home Hero",
+  inputs: [
+    { name: "badge",              type: "string",  defaultValue: "New Season Collection" },
+    { name: "title",              type: "string",  defaultValue: "Style That" },
+    { name: "titleHighlight",     type: "string",  defaultValue: "Speaks For You." },
+    { name: "subtitle",           type: "longText", defaultValue: "Discover curated collections that define modern fashion. From everyday essentials to statement pieces — all in one place." },
+    { name: "primaryCtaText",     type: "string",  defaultValue: "Shop Now" },
+    { name: "primaryCtaHref",     type: "url",     defaultValue: "/collections/all" },
+    { name: "secondaryCtaText",   type: "string",  defaultValue: "View Collections" },
+    { name: "secondaryCtaHref",   type: "url",     defaultValue: "/collections/all" },
+    {
+      name: "stats",
+      type: "list",
+      defaultValue: [
+        { value: "10K+", label: "Products" },
+        { value: "50K+", label: "Happy Customers" },
+        { value: "4.9★", label: "Average Rating" },
+      ],
+      subFields: [
+        { name: "value", type: "string" },
+        { name: "label", type: "string" },
+      ],
+    },
+    {
+      name: "previewCards",
+      type: "list",
+      defaultValue: [
+        { bg: "from-pink-200 via-rose-200 to-fuchsia-300",   icon: "👗", label: "Women",       sub: "2,400+ items",  tag: "New"      },
+        { bg: "from-slate-200 via-gray-300 to-zinc-400",     icon: "👔", label: "Men",         sub: "1,800+ items",  tag: "Popular"  },
+        { bg: "from-amber-200 via-orange-200 to-yellow-300", icon: "👜", label: "Accessories", sub: "900+ items",    tag: "Trending" },
+        { bg: "from-red-200 via-rose-200 to-pink-300",       icon: "🏷️", label: "Sale",        sub: "Up to 50% off", tag: "Hot"      },
+      ],
+      subFields: [
+        { name: "bg",    type: "string" },
+        { name: "icon",  type: "string" },
+        { name: "label", type: "string" },
+        { name: "sub",   type: "string" },
+        { name: "tag",   type: "string" },
+      ],
+    },
+  ],
+});
+
+Builder.registerComponent(CategorySection, {
+  name: "CategorySection",
+  friendlyName: "Category Section",
+  inputs: [
+    { name: "heading",    type: "string", defaultValue: "Shop by Category" },
+    { name: "subheading", type: "string", defaultValue: "Explore" },
+    {
+      name: "categories",
+      type: "list",
+      defaultValue: [
+        { name: "Women",       description: "New season styles",  href: "/collections/all", gradient: "from-pink-400 via-rose-400 to-fuchsia-500",  icon: "👗", count: "2,400+ items"  },
+        { name: "Men",         description: "Modern essentials",  href: "/collections/all", gradient: "from-slate-600 via-gray-700 to-zinc-800",     icon: "👔", count: "1,800+ items"  },
+        { name: "Accessories", description: "Complete the look",  href: "/collections/all", gradient: "from-amber-400 via-orange-400 to-yellow-500", icon: "👜", count: "900+ items"    },
+        { name: "Sale",        description: "Up to 50% off",      href: "/collections/all", gradient: "from-red-500 via-rose-500 to-pink-600",        icon: "🏷️", count: "Limited time" },
+      ],
+      subFields: [
+        { name: "name",        type: "string" },
+        { name: "description", type: "string" },
+        { name: "href",        type: "url" },
+        { name: "gradient",    type: "string" },
+        { name: "icon",        type: "string" },
+        { name: "count",       type: "string" },
+      ],
+    },
+  ],
+});
+
+Builder.registerComponent(FeaturedProductsSection, {
+  name: "FeaturedProductsSection",
+  friendlyName: "Featured Products Section",
+  inputs: [
+    { name: "heading",     type: "string", defaultValue: "Trending Now" },
+    { name: "subheading",  type: "string", defaultValue: "Curated for you" },
+    { name: "viewAllText", type: "string", defaultValue: "View all products" },
+    { name: "viewAllHref", type: "url",    defaultValue: "/collections/all" },
+  ],
+});
+
+Builder.registerComponent(PromoBanner, {
+  name: "PromoBanner",
+  friendlyName: "Promo Banner",
+  inputs: [
+    { name: "badgeEmoji",      type: "string",   defaultValue: "🔥" },
+    { name: "badgeText",       type: "string",   defaultValue: "Limited Time Offer — Ends Sunday" },
+    { name: "title",           type: "string",   defaultValue: "Summer Sale" },
+    { name: "titleHighlight",  type: "string",   defaultValue: "Up to 50% Off" },
+    { name: "description",     type: "longText", defaultValue: "Massive savings across our entire summer collection. Hundreds of styles added — grab yours before they're gone." },
+    { name: "ctaText",         type: "string",   defaultValue: "Shop the Sale" },
+    { name: "ctaHref",         type: "url",      defaultValue: "/collections/all" },
+  ],
+});
+
+Builder.registerComponent(TestimonialsSection, {
+  name: "TestimonialsSection",
+  friendlyName: "Testimonials Section",
+  inputs: [
+    { name: "heading",    type: "string", defaultValue: "Loved by 50,000+ Customers" },
+    { name: "subheading", type: "string", defaultValue: "What our customers say" },
+    {
+      name: "testimonials",
+      type: "list",
+      defaultValue: [
+        { id: 1, quote: "Amazing quality and lightning-fast delivery.", name: "Sarah M.", location: "New York, USA", initials: "SM", color: "bg-pink-500",   rating: 5, product: "Classic Oxford Shirt" },
+        { id: 2, quote: "I've been shopping here for two years and the quality never disappoints.", name: "James R.", location: "London, UK",     initials: "JR", color: "bg-blue-600",  rating: 5, product: "Slim Fit Denim"     },
+        { id: 3, quote: "The floral wrap dress is absolutely stunning.", name: "Priya K.", location: "Mumbai, India", initials: "PK", color: "bg-violet-500", rating: 5, product: "Floral Wrap Dress"  },
+      ],
+      subFields: [
+        { name: "id",       type: "number" },
+        { name: "quote",    type: "longText" },
+        { name: "name",     type: "string" },
+        { name: "location", type: "string" },
+        { name: "initials", type: "string" },
+        { name: "color",    type: "string" },
+        { name: "rating",   type: "number" },
+        { name: "product",  type: "string" },
+      ],
+    },
+    {
+      name: "trustBadges",
+      type: "list",
+      defaultValue: [
+        { icon: "🚚", title: "Free Shipping", desc: "On orders over $50" },
+        { icon: "🔄", title: "Free Returns",  desc: "30-day return policy" },
+        { icon: "🔒", title: "Secure Payment", desc: "100% secure checkout" },
+        { icon: "💬", title: "24/7 Support",  desc: "Dedicated customer care" },
+      ],
+      subFields: [
+        { name: "icon",  type: "string" },
+        { name: "title", type: "string" },
+        { name: "desc",  type: "string" },
+      ],
+    },
+  ],
+});
+
+Builder.registerComponent(NewsletterSection, {
+  name: "NewsletterSection",
+  friendlyName: "Newsletter Section",
+  inputs: [
+    { name: "title",          type: "string",   defaultValue: "Get 10% Off Your First Order" },
+    { name: "description",    type: "longText", defaultValue: "Subscribe for exclusive deals, new arrivals, and style inspiration delivered straight to your inbox." },
+    { name: "buttonText",     type: "string",   defaultValue: "Get 10% Off" },
+    { name: "successMessage", type: "string",   defaultValue: "🎉 You're in! Check your inbox for your 10% off code." },
   ],
 });

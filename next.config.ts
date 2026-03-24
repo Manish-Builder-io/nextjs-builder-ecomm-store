@@ -5,7 +5,7 @@ const nextConfig: NextConfig = BuilderDevTools()({
   // Enable standalone output for Docker
   output: 'standalone',
   images: {
-    domains: ["cdn.builder.io"],
+    domains: ["cdn.builder.io", "images.unsplash.com"],
   },
   i18n: {
     locales: ["en-US", "ca-ES", "fr-FR"],
