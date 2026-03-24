@@ -63,12 +63,7 @@ export default function HomeBuilderContent({ content }: Props) {
     >
       {(data, loading, fullContent) => (
         <React.Fragment>
-          {/* Static homepage sections always rendered */}
-          <main>
-            <HomeSections />
-          </main>
-
-          {/* Builder drag-and-drop content rendered below sections */}
+          {/* Builder drag-and-drop content rendered first (e.g. hero) */}
           {!loading && (
             <BuilderComponent
               name={MODEL}
@@ -80,6 +75,11 @@ export default function HomeBuilderContent({ content }: Props) {
               }}
             />
           )}
+
+          {/* Static homepage sections */}
+          <main>
+            <HomeSections />
+          </main>
         </React.Fragment>
       )}
     </BuilderContent>
