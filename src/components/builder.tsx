@@ -11,7 +11,7 @@ type BuilderPageProps = ComponentProps<typeof BuilderComponent>;
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
-builder.setUserAttributes({userLoggedIn: true});
+builder.setUserAttributes({location: "IN"});
 
 export function RenderBuilderContent({ content, model, locale = "en-US"  }: BuilderPageProps) {
   // Call the useIsPreviewing hook to determine if

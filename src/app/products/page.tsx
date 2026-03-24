@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-  const builderModelName = "symbol";
+  const builderModelName = "products-page";
 
   const content = await builder
     // Get the page content from Builder with the specified options
@@ -27,7 +27,7 @@ export default async function Page(props: PageProps) {
   return (
     <>
       {/* Render the Builder page */}
-      <RenderBuilderContent content={content} model={builderModelName} data={{ apiBaseUrl:"production-cougars-services-public.profitoptics.com/api", warehouseCode: "GADS"  }} />
+      <RenderBuilderContent content={content} model={builderModelName}  />
     </>
   );
 }

@@ -12,6 +12,8 @@ import ExploreColleges from "@/components/ExploreColleges";
 import ValidationTestComponent from "@/components/ValidationTestComponent";
 import VideoPlayer from "@/components/VideoPlayer";
 import RelatedArticles from "@/components/RelatedArticles";
+import BlogCard from "@/components/BlogCard";
+import SizeChartTabs from "@/components/SizeChartTabs";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1235,3 +1237,87 @@ Builder.register('insertMenu', {
     { name: 'Core:Canvas', item: '' },
   ],
 })
+
+// Register SizeChartTabs component
+Builder.registerComponent(SizeChartTabs, {
+  name: "SizeChartTabs",
+  friendlyName: "Size Chart Tabs",
+  description: "Tabbed interface for displaying size chart content. Each tab supports nested Builder blocks.",
+  canHaveChildren: true,
+  inputs: [
+    {
+      name: "tabs",
+      type: "list",
+      defaultValue: [{ label: "Tab 1", tabContent: [] }],
+      copyOnAdd: true,
+      subFields: [
+        {
+          name: "label",
+          type: "string",
+          defaultValue: "Tab",
+          helperText: "Label shown on the tab button",
+        },
+        {
+          name: "tabContent",
+          type: "uiBlocks",
+          defaultValue: {
+            blocks: [],
+          },
+          helperText: "Builder blocks rendered when this tab is active",
+        },
+      ],
+    },
+  ],
+});
+
+// Register BlogCard component — usable inside blog-post page model layouts
+Builder.registerComponent(BlogCard, {
+  name: "BlogCard",
+  friendlyName: "Blog Card",
+  description: "Displays a single blog post preview card with image, title, blurb, author, and date.",
+  inputs: [
+    {
+      name: "title",
+      type: "string",
+      defaultValue: "Blog Post Title",
+      friendlyName: "Title",
+    },
+    {
+      name: "slug",
+      type: "string",
+      friendlyName: "Slug",
+      helperText: "URL slug for the post (e.g. my-post-title). Used to build the /blog/:slug link.",
+    },
+    {
+      name: "blurb",
+      type: "longText",
+      friendlyName: "Blurb",
+      helperText: "Short summary shown below the title.",
+    },
+    {
+      name: "image",
+      type: "file",
+      friendlyName: "Cover Image",
+    },
+    {
+      name: "imageAlt",
+      type: "string",
+      friendlyName: "Image Alt Text",
+    },
+    {
+      name: "date",
+      type: "date",
+      friendlyName: "Publish Date",
+    },
+    {
+      name: "authorName",
+      type: "string",
+      friendlyName: "Author Name",
+    },
+    {
+      name: "authorAvatar",
+      type: "file",
+      friendlyName: "Author Avatar",
+    },
+  ],
+});
