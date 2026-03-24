@@ -48,7 +48,7 @@ const SizeChartTabs: React.FC<SizeChartTabsProps> = (props) => {
 
         {props.tabs[activeTab]?.tabContent && (
           <BuilderBlocks
-            parentElementId={props.builderBlock.id}
+            parentElementId={props.builderBlock?.id}
             dataPath={`component.options.tabs.${activeTab}.tabContent`}
             blocks={props.tabs[activeTab].tabContent}
           />

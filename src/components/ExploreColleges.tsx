@@ -23,7 +23,7 @@ export default function ExploreColleges({
   viewAllLinkText = "Or view all colleges",
   viewAllLinkHref = "/explore-college",
   backgroundColor = "#5ACCCB",
-}: ExploreCollegesProps): JSX.Element {
+}: ExploreCollegesProps): React.ReactElement {
   const bgColorStyle = backgroundColor.startsWith('#') || backgroundColor.startsWith('rgb') 
     ? { backgroundColor } 
     : {};

@@ -60,7 +60,9 @@ const normalizeArticle = (
     const firstInner =
       Array.isArray(inner) && inner.length > 0 ? inner[0] : inner;
     if (firstInner) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ref: any = firstInner;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const innerSource: any =
         ref.data ??
         ref.value?.data ??
@@ -68,7 +70,9 @@ const normalizeArticle = (
         ref;
 
       // Resolve author reference (enriched level 2)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rawAuthor: any = innerSource.author;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const authorSource: any =
         rawAuthor?.data ??
         rawAuthor?.value?.data ??
@@ -99,7 +103,9 @@ const normalizeArticle = (
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ref: any = item as BuilderReferencedArticle;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const source: any =
     ref.data ??
     ref.value?.data ??
@@ -107,7 +113,9 @@ const normalizeArticle = (
     ref;
 
   // Resolve author reference (enriched level 2) for non-list usage
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawAuthor: any = source.author;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const authorSource: any =
     rawAuthor?.data ??
     rawAuthor?.value?.data ??

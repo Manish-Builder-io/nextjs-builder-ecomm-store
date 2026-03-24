@@ -11,14 +11,14 @@ export interface BuilderBlockProps {
   id?: string;
   name?: string;
   url?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface BuilderPageProps {
   id: string;
   name: string;
   url: string;
-  data: any;
+  data: Record<string, unknown>;
   html?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
