@@ -38,6 +38,7 @@ export function RenderBuilderContent({ content, model, locale = "en-US"  }: Buil
             description: "Discover amazing products and great deals. Shop the latest collection with free shipping on orders over $50.",
             ctaText: "Shop Now",
             featured: true,
+            imageSrc: "https://cdn.builder.io/api/v1/image/assets%2Fdb60bf3db7fa4db7be81ef05b72bd720%2Fd44403a7f0204687882590d9b9cb2a17"
           }}
         />
       );
