@@ -36,7 +36,9 @@ function evalBinding(expression: string, state: BuilderState): unknown {
 function resolveBlock(block: BuilderBlock, state: BuilderState): void {
   if (!block || typeof block !== "object") return;
 
-  // Resolve bindings declared on this block
+  // Resolve bindings declared on this block, then remove them so Builder's
+  // SDK doesn't re-evaluate them during SSR (it would get undefined and
+  // override the values we just set, causing the hydration mismatch).
   const bindings = block.bindings;
   if (bindings && typeof bindings === "object") {
     for (const [path, expression] of Object.entries(bindings as Record<string, string>)) {
@@ -45,6 +47,8 @@ function resolveBlock(block: BuilderBlock, state: BuilderState): void {
         setNestedValue(block, path, value);
       }
     }
+    // Delete bindings so the SDK renders with the resolved option values
+    delete block.bindings;
   }
 
   const component = block.component as BuilderBlock | undefined;
