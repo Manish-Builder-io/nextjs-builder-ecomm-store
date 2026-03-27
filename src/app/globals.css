@@ -58,3 +58,27 @@ body {
   color: rgb(var(--foreground));
   font-family: var(--font-family-base);
 }
+
+/* Base style for the icon */
+.builder-accordion-title::after {
+  content: "+";
+  position: absolute;
+  right: 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* When accordion is open → show minus */
+.builder-accordion-title.builder-accordion-title-open::after {
+  content: "−";
+}
+
+/* When accordion is closed → show plus */
+.builder-accordion-title.builder-accordion-title-closed::after {
+  content: "+";
+}
+
+/* Optional: ensure parent positioning */
+.builder-accordion-title {
+  position: relative;
+}
