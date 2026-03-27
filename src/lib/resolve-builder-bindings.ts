@@ -8,21 +8,24 @@
  * This utility replaces that path for the SSR pass.
  */
 
-function setNestedValue(obj: Record<string, any>, path: string, value: unknown): void {
+type BuilderBlock = Record<string, unknown>;
+type BuilderState = Record<string, unknown>;
+
+function setNestedValue(obj: BuilderBlock, path: string, value: unknown): void {
   const keys = path.split(".");
   let curr = obj;
   for (let i = 0; i < keys.length - 1; i++) {
-    if (curr[keys[i]] == null || typeof curr[keys[i]] !== "object") {
-      curr[keys[i]] = {};
+    const key = keys[i];
+    if (curr[key] == null || typeof curr[key] !== "object") {
+      curr[key] = {};
     }
-    curr = curr[keys[i]];
+    curr = curr[key] as BuilderBlock;
   }
   curr[keys[keys.length - 1]] = value;
 }
 
-function evalBinding(expression: string, state: Record<string, unknown>): unknown {
+function evalBinding(expression: string, state: BuilderState): unknown {
   try {
-    // eslint-disable-next-line no-new-func
     const fn = new Function("state", expression);
     return fn(state);
   } catch {
@@ -30,12 +33,13 @@ function evalBinding(expression: string, state: Record<string, unknown>): unknow
   }
 }
 
-function resolveBlock(block: Record<string, any>, state: Record<string, unknown>): void {
+function resolveBlock(block: BuilderBlock, state: BuilderState): void {
   if (!block || typeof block !== "object") return;
 
   // Resolve bindings declared on this block
-  if (block.bindings && typeof block.bindings === "object") {
-    for (const [path, expression] of Object.entries<string>(block.bindings)) {
+  const bindings = block.bindings;
+  if (bindings && typeof bindings === "object") {
+    for (const [path, expression] of Object.entries(bindings as Record<string, string>)) {
       const value = evalBinding(expression, state);
       if (value !== undefined) {
         setNestedValue(block, path, value);
@@ -43,25 +47,29 @@ function resolveBlock(block: Record<string, any>, state: Record<string, unknown>
     }
   }
 
+  const component = block.component as BuilderBlock | undefined;
+
   // Recurse into Columns component columns
-  if (
-    block.component?.name === "Columns" &&
-    Array.isArray(block.component.options?.columns)
-  ) {
-    for (const col of block.component.options.columns) {
-      if (Array.isArray(col.blocks)) {
-        col.blocks.forEach((child: Record<string, any>) => resolveBlock(child, state));
+  if (component?.name === "Columns") {
+    const columns = (component.options as BuilderBlock)?.columns;
+    if (Array.isArray(columns)) {
+      for (const col of columns as BuilderBlock[]) {
+        if (Array.isArray(col.blocks)) {
+          (col.blocks as BuilderBlock[]).forEach((child) => resolveBlock(child, state));
+        }
       }
     }
   }
 
   // Symbol — its own `data` becomes the state for blocks inside it
-  if (block.component?.name === "Symbol") {
-    const symbolState: Record<string, unknown> =
-      block.component.options?.symbol?.data ?? {};
-    const symbolContent = block.component.options?.symbol?.content;
-    if (Array.isArray(symbolContent?.data?.blocks)) {
-      symbolContent.data.blocks.forEach((child: Record<string, any>) =>
+  if (component?.name === "Symbol") {
+    const options = component.options as BuilderBlock | undefined;
+    const symbol = options?.symbol as BuilderBlock | undefined;
+    const symbolState: BuilderState = (symbol?.data as BuilderState) ?? {};
+    const symbolContent = symbol?.content as BuilderBlock | undefined;
+    const symbolBlocks = (symbolContent?.data as BuilderBlock)?.blocks;
+    if (Array.isArray(symbolBlocks)) {
+      (symbolBlocks as BuilderBlock[]).forEach((child) =>
         resolveBlock(child, symbolState)
       );
     }
@@ -69,7 +77,7 @@ function resolveBlock(block: Record<string, any>, state: Record<string, unknown>
 
   // Recurse into explicit children array
   if (Array.isArray(block.children)) {
-    block.children.forEach((child: Record<string, any>) => resolveBlock(child, state));
+    (block.children as BuilderBlock[]).forEach((child) => resolveBlock(child, state));
   }
 }
 
@@ -77,24 +85,28 @@ function resolveBlock(block: Record<string, any>, state: Record<string, unknown>
  * Returns a deep-cloned copy of `content` with all binding expressions
  * evaluated and applied to their target component options.
  *
- * @param content  The raw Builder content object returned by `builder.get()`
+ * @param content   The raw Builder content object returned by `builder.get()`
  * @param extraState  Additional state to merge (mirrors the `data` prop on BuilderComponent)
  */
 export function resolveBuilderBindings(
-  content: Record<string, any> | null | undefined,
-  extraState?: Record<string, unknown>
-): Record<string, any> | null | undefined {
-  if (!content?.data?.blocks) return content;
+  content: BuilderBlock | null | undefined,
+  extraState?: BuilderState
+): BuilderBlock | null | undefined {
+  if (!content?.data) return content;
+
+  const data = content.data as BuilderBlock;
+  if (!Array.isArray(data.blocks)) return content;
 
   // Deep-clone so we never mutate the original fetch result
-  const resolved: Record<string, any> = JSON.parse(JSON.stringify(content));
+  const resolved: BuilderBlock = JSON.parse(JSON.stringify(content));
+  const resolvedData = resolved.data as BuilderBlock;
 
-  const pageState: Record<string, unknown> = {
-    ...(resolved.data?.state ?? {}),
+  const pageState: BuilderState = {
+    ...((resolvedData.state as BuilderState) ?? {}),
     ...(extraState ?? {}),
   };
 
-  for (const block of resolved.data.blocks) {
+  for (const block of resolvedData.blocks as BuilderBlock[]) {
     resolveBlock(block, pageState);
   }
 
