@@ -85,20 +85,24 @@ function resolveBlock(block: BuilderBlock, state: BuilderState): void {
  * Returns a deep-cloned copy of `content` with all binding expressions
  * evaluated and applied to their target component options.
  *
+ * The generic parameter preserves the exact input type so callers don't
+ * need to cast the result.
+ *
  * @param content   The raw Builder content object returned by `builder.get()`
  * @param extraState  Additional state to merge (mirrors the `data` prop on BuilderComponent)
  */
-export function resolveBuilderBindings(
-  content: BuilderBlock | null | undefined,
+export function resolveBuilderBindings<T>(
+  content: T,
   extraState?: BuilderState
-): BuilderBlock | null | undefined {
-  if (!content?.data) return content;
+): T {
+  const c = content as BuilderBlock | null | undefined;
+  if (!c?.data) return content;
 
-  const data = content.data as BuilderBlock;
+  const data = c.data as BuilderBlock;
   if (!Array.isArray(data.blocks)) return content;
 
   // Deep-clone so we never mutate the original fetch result
-  const resolved: BuilderBlock = JSON.parse(JSON.stringify(content));
+  const resolved: BuilderBlock = JSON.parse(JSON.stringify(c));
   const resolvedData = resolved.data as BuilderBlock;
 
   const pageState: BuilderState = {
@@ -110,5 +114,5 @@ export function resolveBuilderBindings(
     resolveBlock(block, pageState);
   }
 
-  return resolved;
+  return resolved as T;
 }
