@@ -1,0 +1,18 @@
+diff --git a/node_modules/@builder.io/widgets/dist/lib/components/Carousel.js b/node_modules/@builder.io/widgets/dist/lib/components/Carousel.js
+index a3a685a..6af0a46 100644
+--- a/node_modules/@builder.io/widgets/dist/lib/components/Carousel.js
++++ b/node_modules/@builder.io/widgets/dist/lib/components/Carousel.js
+@@ -82,11 +82,9 @@ var CarouselComponent = /** @class */ (function (_super) {
+                     // TODO: on change emit event on element?
+                     // renderBottomCenterControls={this.props.hideDots ? () => null : undefined}
+                     // OOF!!
+-                    nextArrow: React.createElement("div", null,
+-                        React.createElement(react_1.BuilderBlocks, { parentElementId: _this.props.builderBlock.id, dataPath: "component.options.prevButton", blocks: _this.props.prevButton })), 
++                    nextArrow: React.createElement(function NextArrow(_ref) { var rest = Object.assign({}, _ref); delete rest.currentSlide; delete rest.slideCount; return React.createElement("div", rest, React.createElement(react_1.BuilderBlocks, { parentElementId: _this.props.builderBlock.id, dataPath: "component.options.prevButton", blocks: _this.props.prevButton })); }),
+                     // OOF!!
+-                    prevArrow: React.createElement("div", null,
+-                        React.createElement(react_1.BuilderBlocks, { parentElementId: _this.props.builderBlock.id, dataPath: "component.options.nextButton", blocks: _this.props.nextButton })) }, _this.props.slickProps), _this.props.useChildrenForSlides
++                    prevArrow: React.createElement(function PrevArrow(_ref) { var rest = Object.assign({}, _ref); delete rest.currentSlide; delete rest.slideCount; return React.createElement("div", rest, React.createElement(react_1.BuilderBlocks, { parentElementId: _this.props.builderBlock.id, dataPath: "component.options.nextButton", blocks: _this.props.nextButton })); }) }, _this.props.slickProps), _this.props.useChildrenForSlides
+                     ? _this.props.builderBlock &&
+                         _this.props.builderBlock.children &&
+                         _this.props.builderBlock.children.map(function (block, index) {
