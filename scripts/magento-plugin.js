@@ -17,6 +17,10 @@
  *    per-plugin config such as storeUrl, apiKey, etc.
  *    Full Admin GraphQL introspection confirms this gap.
  *
+ *  FIX VERIFICATION — pluginSettings argument now supported
+ *    Tests the new pluginSettings argument on updatePlugins to confirm the
+ *    fix for ISSUE 2 is live and correctly persists per-plugin configuration.
+ *
  * Usage:
  *   node scripts/magento-plugin.js           # run all tests live
  *   node scripts/magento-plugin.js --dry-run # skip mutations, print payloads
@@ -32,7 +36,7 @@ const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 const PRIVATE_KEY        = process.env.BUILDER_PRIVATE_API_KEY || "bpk-f1b190065f2947a6b51150cf31441b5f";
 const MAGENTO_PLUGIN_ID  = "@builder.io/plugin-magento";
 
-// Desired plugin config — cannot be passed via any current Admin API mutation
+// Desired plugin config — now testable via the new pluginSettings argument
 const MAGENTO_PLUGIN_CONFIG = {
   storeUrl:  "https://your-magento-store.com",
   apiKey:    "your-magento-api-key",
@@ -98,12 +102,6 @@ async function fetchCurrentPlugins() {
 }
 
 // ─── ISSUE 1 ──────────────────────────────────────────────────────────────────
-// Builder.io schema declares updatePlugins(...): Void! (non-nullable Void scalar).
-// The server returns null which violates the non-nullable contract → GraphQL error.
-// We test both forms:
-//   Form A: select the return field  → triggers the null-violation error
-//   Form B: omit the return field    → tests whether the mutation still executes
-// ─────────────────────────────────────────────────────────────────────────────
 async function issue1_nullViolationTest(loadPlugins, magentoLoaded) {
   sep("ISSUE 1 — Null-violation on Void! return type");
 
@@ -162,12 +160,7 @@ async function issue1_nullViolationTest(loadPlugins, magentoLoaded) {
 
   // ── Form B: omit the return field (workaround attempt) ─────────────────────
   console.info("\n  ── Form B: mutation omits the return field (workaround attempt)");
-  console.info("     In GraphQL, scalar fields cannot have sub-selections,");
-  console.info("     so the only way to 'omit' the return is to not name the field.");
-  console.info("     Some servers support a bare  mutation { }  with no field — testing:\n");
 
-  // GraphQL requires at least one field in a selection set, so the only valid
-  // alternative is an alias to __typename which is always non-null.
   const MUTATION_ALIAS_TYPENAME = /* GraphQL */ `
     mutation UpdatePluginsB($loadPlugins: [String!]!) {
       result: updatePlugins(loadPlugins: $loadPlugins)
@@ -191,10 +184,6 @@ async function issue1_nullViolationTest(loadPlugins, magentoLoaded) {
 }
 
 // ─── ISSUE 2 ──────────────────────────────────────────────────────────────────
-// updatePlugins accepts only [String!]! — no config payload is possible.
-// Full Admin GraphQL introspection confirms no mutation exists to write
-// per-plugin settings (storeUrl, apiKey, hasConnected…).
-// ─────────────────────────────────────────────────────────────────────────────
 async function issue2_noConfigSupportTest() {
   sep("ISSUE 2 — No API surface to pass plugin configuration");
 
@@ -212,16 +201,6 @@ async function issue2_noConfigSupportTest() {
   but there is no mutation that writes to this path.
   `);
 
-  // Demonstrate: try passing config as a JSON-encoded string inside the URL
-  // (a creative workaround sometimes used with plugin bundle URLs).
-  const pluginUrlWithConfig =
-    `https://cdn.builder.io/plugin/magento.system.js` +
-    `?storeUrl=${encodeURIComponent(MAGENTO_PLUGIN_CONFIG.storeUrl)}` +
-    `&apiKey=${encodeURIComponent(MAGENTO_PLUGIN_CONFIG.apiKey)}`;
-
-  console.info("  Workaround attempt: encode config as query-params on the plugin URL");
-  console.info(`    ${pluginUrlWithConfig}\n`);
-
   label("INFO", "Introspecting all Admin GraphQL mutations to confirm the gap…\n");
 
   const { json } = await graphqlRequest(`{
@@ -237,7 +216,6 @@ async function issue2_noConfigSupportTest() {
 
   const mutations = json.data?.__schema?.mutationType?.fields ?? [];
 
-  // Print the full mutation list with their argument shapes
   console.info("  All available mutations:");
   mutations.forEach((m) => {
     const args = m.args
@@ -254,7 +232,6 @@ async function issue2_noConfigSupportTest() {
     console.info(`    ${m.name}(${args})${marker}`);
   });
 
-  // Specifically check for any mutation that has a 'settings' or 'config' arg on updatePlugins
   const updatePluginsMutation = mutations.find((m) => m.name === "updatePlugins");
   const hasConfigArg = updatePluginsMutation?.args.some((a) =>
     /config|setting|option/i.test(a.name)
@@ -278,6 +255,170 @@ async function issue2_noConfigSupportTest() {
       ? "A config argument exists — re-inspect the output above."
       : "ISSUE 2 confirmed: no mutation can write per-plugin configuration."
   );
+}
+
+// ─── FIX VERIFICATION ─────────────────────────────────────────────────────────
+// Tests the newly shipped pluginSettings argument on updatePlugins.
+// Verifies that:
+//   1. The mutation is accepted without errors (schema now supports the arg)
+//   2. The config is actually persisted — confirmed by re-reading settings
+// ─────────────────────────────────────────────────────────────────────────────
+async function fixVerification_pluginSettingsTest(loadPlugins, magentoLoaded) {
+  sep("FIX VERIFICATION — pluginSettings argument (ISSUE 2 fix)");
+
+  console.info(`
+  Testing the new pluginSettings argument on updatePlugins:
+
+    mutation {
+      updatePlugins(
+        loadPlugins: ["${MAGENTO_PLUGIN_ID}"]
+        pluginSettings: {
+          "${MAGENTO_PLUGIN_ID}": {
+            "storeUrl": "${MAGENTO_PLUGIN_CONFIG.storeUrl}",
+            "apiKey":   "${MAGENTO_PLUGIN_CONFIG.apiKey}"
+          }
+        }
+      )
+    }
+
+  Expected: mutation succeeds AND config appears in settings.settings.plugins
+  `);
+
+  const targetPlugins = magentoLoaded
+    ? loadPlugins
+    : [...loadPlugins, MAGENTO_PLUGIN_ID];
+
+  // The pluginSettings value is passed as a JSON string variable since
+  // the Admin API schema types it as a JSONObject / untyped scalar.
+  const MUTATION_WITH_PLUGIN_SETTINGS = /* GraphQL */ `
+    mutation UpdatePluginsWithSettings(
+      $loadPlugins: [String!]!
+      $pluginSettings: JSON
+    ) {
+      updatePlugins(
+        loadPlugins: $loadPlugins
+        pluginSettings: $pluginSettings
+      )
+    }
+  `;
+
+  const pluginSettings = {
+    [MAGENTO_PLUGIN_ID]: MAGENTO_PLUGIN_CONFIG,
+  };
+
+  console.info("  ── Step 1: send updatePlugins with pluginSettings");
+  console.info(`     loadPlugins    : ${JSON.stringify(targetPlugins)}`);
+  console.info(`     pluginSettings : ${JSON.stringify(pluginSettings, null, 2).replace(/\n/g, "\n                      ")}\n`);
+
+  if (isDryRun) {
+    label("INFO", "Dry-run — skipping mutation. Payload printed above.");
+    return;
+  }
+
+  const { json: mutJson } = await graphqlRequest(MUTATION_WITH_PLUGIN_SETTINGS, {
+    loadPlugins: targetPlugins,
+    pluginSettings,
+  });
+
+  console.info("  📡  Raw mutation response:");
+  console.info(JSON.stringify(mutJson, null, 2).replace(/^/gm, "  "));
+
+  const mutationErrors = mutJson.errors ?? [];
+  const schemaRejectsArg = mutationErrors.some(
+    (e) =>
+      /unknown argument/i.test(e.message) ||
+      /pluginSettings/i.test(e.message)
+  );
+  const nullViolation = mutationErrors.some((e) =>
+    e.message.includes("Cannot return null for non-nullable field")
+  );
+  const otherErrors = mutationErrors.filter(
+    (e) => !schemaRejectsArg && !nullViolation
+  );
+
+  if (schemaRejectsArg) {
+    label("FAIL", "Schema still does not accept pluginSettings — fix is NOT live.");
+    console.info(`\n  Error: ${mutationErrors[0]?.message}`);
+    return;
+  }
+
+  if (nullViolation) {
+    // Null-violation means the resolver ran (arg accepted) but Void! still broken.
+    // The write may still have applied — check settings to find out.
+    label("WARN", "Null-violation on Void! return (ISSUE 1 persists), but the write may have applied.");
+    label("INFO", "Continuing to verify settings — checking if config was persisted…");
+  } else if (otherErrors.length > 0) {
+    label("WARN", `Unexpected errors — see raw response above.`);
+    otherErrors.forEach((e) => console.info(`  • ${e.message}`));
+  } else {
+    label("PASS", "Mutation accepted without errors — pluginSettings arg is live ✅");
+  }
+
+  // ── Step 2: re-read settings and verify the config was persisted ────────────
+  console.info("\n  ── Step 2: re-read settings to verify config was persisted");
+
+  const { json: settingsJson } = await graphqlRequest(`{ settings }`);
+
+  if (settingsJson.errors) {
+    label("WARN", "Could not re-fetch settings for verification.");
+    settingsJson.errors.forEach((e) => console.info(`  • ${e.message}`));
+    return;
+  }
+
+  const persistedPluginCfg =
+    settingsJson.data?.settings?.settings?.plugins?.[MAGENTO_PLUGIN_ID];
+
+  console.info("\n  Persisted config for @builder.io/plugin-magento:");
+  console.info(
+    persistedPluginCfg
+      ? JSON.stringify(persistedPluginCfg, null, 2).replace(/^/gm, "    ")
+      : "    (none found)"
+  );
+
+  if (!persistedPluginCfg) {
+    label("FAIL", "Config was NOT persisted — fix may be incomplete.");
+    return;
+  }
+
+  // Spot-check a few expected keys
+  const checks = [
+    ["storeUrl",  MAGENTO_PLUGIN_CONFIG.storeUrl],
+    ["apiKey",    MAGENTO_PLUGIN_CONFIG.apiKey],
+    ["currency",  MAGENTO_PLUGIN_CONFIG.currency],
+  ];
+
+  let allMatch = true;
+  for (const [key, expected] of checks) {
+    const actual = persistedPluginCfg[key];
+    const ok = actual === expected;
+    if (!ok) allMatch = false;
+    console.info(
+      `\n  ${ok ? "✅" : "❌"}  settings.settings.plugins["${MAGENTO_PLUGIN_ID}"].${key}`
+    );
+    console.info(`       expected : ${expected}`);
+    console.info(`       actual   : ${actual ?? "(missing)"}`);
+  }
+
+  console.info();
+  if (allMatch) {
+    label("PASS", "All spot-checked config values match — ISSUE 2 fix is verified ✅");
+  } else {
+    label("FAIL", "One or more config values did not persist correctly — see diff above.");
+  }
+
+  // ── Step 3: confirm loadPlugins still intact ────────────────────────────────
+  console.info("\n  ── Step 3: confirm loadPlugins was not clobbered");
+  const updatedLoadPlugins =
+    settingsJson.data?.settings?.loadPlugins ?? [];
+
+  const magentoStillLoaded = updatedLoadPlugins.includes(MAGENTO_PLUGIN_ID);
+  console.info(`\n  loadPlugins after mutation: ${JSON.stringify(updatedLoadPlugins)}`);
+
+  if (magentoStillLoaded) {
+    label("PASS", `${MAGENTO_PLUGIN_ID} is present in loadPlugins ✅`);
+  } else {
+    label("FAIL", `${MAGENTO_PLUGIN_ID} was removed from loadPlugins — regression!`);
+  }
 }
 
 // ─── Jira ticket draft ────────────────────────────────────────────────────────
@@ -410,13 +551,14 @@ DESCRIPTION
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
-  console.info("🛒  Builder.io Admin API — updatePlugins issue reproduction");
+  console.info("🛒  Builder.io Admin API — updatePlugins issue reproduction + fix verification");
   if (isDryRun) console.info("    (--dry-run: mutations are skipped)\n");
 
   const { loadPlugins, magentoLoaded } = await fetchCurrentPlugins();
 
   await issue1_nullViolationTest(loadPlugins, magentoLoaded);
   await issue2_noConfigSupportTest();
+  await fixVerification_pluginSettingsTest(loadPlugins, magentoLoaded);
 
   printJiraTicket();
 

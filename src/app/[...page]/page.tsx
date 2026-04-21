@@ -2,6 +2,7 @@ import { builder } from "@builder.io/sdk";
 import { RenderBuilderContent } from "../../components/builder";
 import { resolveBuilderBindings } from "../../lib/resolve-builder-bindings";
 
+
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -29,14 +30,18 @@ export default async function Page(props: PageProps) {
           enrichOptions: {
             enrichLevel: 3,
           },
+          includeUnpublished: true,
         },
         enrich: true,
         includeRefs: true,
+        locale: "de-DE",
+        includeUnpublished: true,
       })
       // Convert the result to a promise
       .toPromise();
 
     console.log("🚀 ~ Page ~ content:", content);
+
     const resolvedContent = resolveBuilderBindings(content, {
       title: "Welcome to Our Store",
       description: "Discover amazing products and great deals. Shop the latest collection with free shipping on orders over $50.",
