@@ -8,7 +8,7 @@ const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 /* Configuration                 */
 /* ============================= */
 
-const SOURCE_KEY = "bpk-d791096d22984b578a3afc854c1a0fa7";
+const SOURCE_KEY = "bpk-f1b190065f2947a6b51150cf31441b5f";
 
 if (!SOURCE_KEY) {
   console.error("Missing private key.");
