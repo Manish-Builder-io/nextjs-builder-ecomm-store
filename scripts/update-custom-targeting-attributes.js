@@ -104,7 +104,7 @@ Environment variables:
 }
 
 async function main() {
-  const privateKey = process.env.BUILDER_ADMIN_API_KEY || "bpk-a761fc8568094c1a903ca3ca55b3bf72";
+  const privateKey = process.env.BUILDER_ADMIN_API_KEY || "";
   
   if (!privateKey) {
     console.error("❌  Missing BUILDER_ADMIN_API_KEY environment variable.");
@@ -370,7 +370,7 @@ async function updateCustomTargetingAttributes(adminSDK, options) {
     // Note: The Admin SDK doesn't have a direct updateSettings method,
     // so we fall back to the Write API HTTP endpoint
     const writeApiUrl = "https://builder.io/api/v1/write/space";
-    const privateKey = process.env.BUILDER_ADMIN_API_KEY || "bpk-a761fc8568094c1a903ca3ca55b3bf72";
+    const privateKey = process.env.BUILDER_ADMIN_API_KEY || "";
     
     const updateResponse = await fetch(writeApiUrl, {
       method: "PATCH",

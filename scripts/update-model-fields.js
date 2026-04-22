@@ -16,7 +16,7 @@
 import process from "node:process";
 
 const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
-const PRIVATE_KEY = "bpk-f1b190065f2947a6b51150cf31441b5f";
+const PRIVATE_KEY = process.env.BUILDER_ADMIN_API_KEY || "";
 
 async function main() {
   if (!PRIVATE_KEY) {
