@@ -33,7 +33,7 @@ import process from "node:process";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
-const PRIVATE_KEY        = process.env.BUILDER_PRIVATE_API_KEY || "REMOVED_BUILDER_PRIVATE_KEY";
+const PRIVATE_KEY        = process.env.BUILDER_PRIVATE_API_KEY || "";
 const MAGENTO_PLUGIN_ID  = "@builder.io/plugin-magento";
 
 // Desired plugin config — now testable via the new pluginSettings argument

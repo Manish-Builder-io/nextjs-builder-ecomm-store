@@ -26,7 +26,7 @@ import process from "node:process";
 
 const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 const PRIVATE_KEY =
-  process.env.BUILDER_PRIVATE_KEY || "REMOVED_BUILDER_PRIVATE_KEY";
+  process.env.BUILDER_PRIVATE_KEY || "";
 
 const BACKUP_DIR = path.resolve("scripts/.backups");
 

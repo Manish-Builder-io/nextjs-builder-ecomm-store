@@ -20,7 +20,7 @@ export default async function Page() {
       })
       // Convert the result to a promise
       .toPromise();
-
+      
 
     return (
       <>

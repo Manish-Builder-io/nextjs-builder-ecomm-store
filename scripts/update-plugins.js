@@ -31,7 +31,7 @@ const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 const MAGENTO_PLUGIN_ID  = "@builder.io/plugin-magento2";
 
 const PRIVATE_KEY =
-  process.env.BUILDER_PRIVATE_API_KEY || "REMOVED_BUILDER_PRIVATE_KEY";
+  process.env.BUILDER_PRIVATE_API_KEY || "";
 
 // Magento plugin config — override via env vars or edit directly
 const MAGENTO_PLUGIN_SETTINGS = {

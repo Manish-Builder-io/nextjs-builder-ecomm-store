@@ -15,7 +15,7 @@ const ENTRY_ID = "6ce09ad4789e49a69edaa665b7eaf81b"; // Update your test content
 // Note: Will be constructed dynamically with normalized model name
 
 // Builder.io Private API Key (starts with "bpk-") - used for write operations
-const PRIVATE_KEY = "REMOVED_BUILDER_PRIVATE_KEY"; // Update your builder test space private KEY
+const PRIVATE_KEY = process.env.BUILDER_PRIVATE_KEY || ""; // Update your builder test space private KEY
 
 // Builder.io Content API Key - used for reading content from the CDN
 const CONTENT_API_KEY = "2b3aed8e6a0542e6a194e47c94001ee6"; // Update your builder test space content API KEY
