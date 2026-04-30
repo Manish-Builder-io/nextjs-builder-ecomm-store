@@ -21,6 +21,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import RelatedArticles from "@/components/RelatedArticles";
 import BlogCard from "@/components/BlogCard";
 import SizeChartTabs from "@/components/SizeChartTabs";
+import VerticalTabBlock from "@/components/VerticalTab/VerticalTabBlock";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1502,4 +1503,91 @@ Builder.registerComponent(NewsletterSection, {
     { name: "buttonText",     type: "string",   defaultValue: "Get 10% Off" },
     { name: "successMessage", type: "string",   defaultValue: "🎉 You're in! Check your inbox for your 10% off code." },
   ],
+});
+
+Builder.registerComponent(VerticalTabBlock, {
+  name: "Vertical Tab",
+  image: "https://icons.veryicon.com/png/o/business/mytona/layout-tab-v.png",
+  canHaveChildren: true,
+  inputs: [
+    {
+      name: "tabHeader",
+      type: "string",
+      localized: true,
+      defaultValue: "",
+    },
+    {
+      name: "tabs",
+      type: "list",
+      required: true,
+      subFields: [
+        {
+          name: "label",
+          type: "string",
+          required: true,
+          localized: true,
+          defaultValue: "Tab Label",
+        },
+        {
+          name: "blocks",
+          type: "uiBlocks",
+          defaultValue: [],
+        },
+      ],
+      defaultValue: [
+        { label: "Tab 1", blocks: [] },
+        { label: "Tab 2", blocks: [] },
+        { label: "Tab 3", blocks: [] },
+      ],
+    },
+    {
+      name: "theme",
+      type: "string",
+      enum: [
+        { label: "gray", value: "gray" },
+        { label: "black", value: "black" },
+        { label: "white", value: "white" },
+      ],
+      defaultValue: "gray",
+      helperText:
+        "Due to a different theme enum structure, the selected theme may not display correctly in the visual builder, but it will work properly on the page.",
+    },
+    {
+      name: "shownFeatures",
+      friendlyName: "No. of Displayed Tab Items",
+      type: "number",
+      defaultValue: 4,
+    },
+    {
+      name: "nextItem",
+      type: "object",
+      subFields: [
+        {
+          name: "displayNextItemLink",
+          type: "boolean",
+          defaultValue: false,
+        },
+        {
+          name: "nextItemText",
+          type: "string",
+          localized: true,
+          defaultValue: "Next Item",
+        },
+      ],
+    },
+    {
+      name: "pagerLabel",
+      type: "string",
+      localized: true,
+      defaultValue: "View More Features",
+    },
+    {
+      name: "pagerContainerStyle",
+      type: "uiStyle",
+      defaultValue: {},
+    },
+  ],
+  defaultStyles: {
+    width: "100%",
+  },
 });
