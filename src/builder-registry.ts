@@ -1519,7 +1519,7 @@ Builder.registerComponent(VerticalTabBlock, {
     {
       name: "tabs",
       type: "list",
-      required: true,
+      required: true, 
       subFields: [
         {
           name: "label",

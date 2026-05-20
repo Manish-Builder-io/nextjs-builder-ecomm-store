@@ -40,7 +40,8 @@ function parseArgs() {
       case "--name":   opts.name   = args[++i]; break;
       case "--alt":    opts.alt    = args[++i]; break;
       case "--title":  opts.title  = args[++i]; break;
-      case "--folder": opts.folder = args[++i]; break;
+      case "--folder":      opts.folder     = args[++i]; break;
+      case "--fetch-first": opts.fetchFirst  = true;      break;
       default:
         console.error(`Unknown argument: ${args[i]}`);
         process.exit(1);
@@ -62,23 +63,79 @@ function guessMimeType(nameOrPath) {
 }
 
 function buildUploadUrl(opts) {
+  // Build non-URL params with URLSearchParams (safe encoding)
   const params = new URLSearchParams();
   if (opts.name)   params.set("name",    opts.name);
   if (opts.alt)    params.set("altText", opts.alt);
   if (opts.title)  params.set("title",   opts.title);
   if (opts.folder) params.set("folder",  opts.folder);
-  if (opts.url)    params.set("url",     opts.url);
+
+  let base = UPLOAD_ENDPOINT;
   const qs = params.toString();
-  return qs ? `${UPLOAD_ENDPOINT}?${qs}` : UPLOAD_ENDPOINT;
+  if (qs) base += `?${qs}`;
+
+  // Append &url= raw (not double-encoded) — Builder's server may expect a
+  // plain URL string rather than a percent-encoded value inside the query string.
+  if (opts.url) {
+    const sep = qs ? "&" : "?";
+    base += `${sep}url=${opts.url}`;
+  }
+
+  return base;
 }
 
 async function uploadFromUrl(opts) {
   const assetName = opts.name || opts.url.split("/").pop().split("?")[0] || "asset";
-  const uploadUrl = buildUploadUrl({ ...opts, name: opts.name || assetName });
 
   console.info(`Uploading from remote URL: ${opts.url}`);
   console.info(`  name: ${assetName}`);
 
+  // Probe the remote URL first
+  console.info("\n[debug] Checking remote URL reachability...");
+  let contentType = "application/octet-stream";
+  try {
+    const probe = await fetch(opts.url, { method: "HEAD" });
+    contentType = probe.headers.get("content-type") || contentType;
+    console.info(`  remote HEAD:  ${probe.status} ${probe.statusText}`);
+    console.info(`  content-type: ${contentType}`);
+    if (!probe.ok) {
+      console.warn("  ⚠️  Remote URL returned non-2xx — Builder may fail to fetch it.");
+    }
+  } catch (e) {
+    console.warn(`  ⚠️  Could not probe remote URL: ${e.message}`);
+  }
+
+  // --fetch-first: download the bytes locally, then upload as binary.
+  // Avoids Builder's server-side URL fetcher which can fail on certain CDNs.
+  if (opts.fetchFirst) {
+    console.info("\n[fetch-first] Downloading image locally...");
+    const dl = await fetch(opts.url);
+    if (!dl.ok) {
+      console.error(`❌  Failed to download remote URL (HTTP ${dl.status})`);
+      process.exit(1);
+    }
+    const buffer = Buffer.from(await dl.arrayBuffer());
+    const mime = dl.headers.get("content-type") || contentType;
+    console.info(`  downloaded: ${(buffer.length / 1024).toFixed(1)} KB  (${mime})`);
+
+    const uploadUrl = buildUploadUrl({ ...opts, name: assetName, url: undefined });
+    console.info(`  request URL: ${uploadUrl}`);
+    console.info("\n[debug] Sending POST to Builder Upload API...");
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      body: buffer,
+      headers: {
+        Authorization: `Bearer ${PRIVATE_KEY}`,
+        "Content-Type": mime.split(";")[0].trim(),
+      },
+    });
+    return { response, assetName };
+  }
+
+  // Default: pass URL to Builder's server-side fetcher
+  const uploadUrl = buildUploadUrl({ ...opts, name: assetName });
+  console.info(`  request URL: ${uploadUrl}`);
+  console.info("\n[debug] Sending POST to Builder Upload API...");
   const response = await fetch(uploadUrl, {
     method: "POST",
     headers: {
@@ -137,13 +194,30 @@ async function main() {
   const { response, assetName } =
     opts.url ? await uploadFromUrl(opts) : await uploadFromFile(opts);
 
+  // Always log response metadata for debugging
+  console.info(`\n[debug] Response: HTTP ${response.status} ${response.statusText}`);
+  const relevantHeaders = ["content-type", "x-request-id", "cf-ray", "x-error", "x-builder-error"];
+  for (const h of relevantHeaders) {
+    const v = response.headers.get(h);
+    if (v) console.info(`  ${h}: ${v}`);
+  }
+
+  const rawBody = await response.text();
+  let parsedBody;
+  try { parsedBody = JSON.parse(rawBody); } catch { parsedBody = null; }
+
   if (!response.ok) {
-    const body = await response.text();
-    console.error(`❌  Upload failed (HTTP ${response.status}): ${body}`);
+    console.error(`\n❌  Upload failed (HTTP ${response.status})`);
+    if (parsedBody) {
+      console.error("  response JSON:", JSON.stringify(parsedBody, null, 2));
+    } else {
+      console.error("  response body:", rawBody || "(empty)");
+    }
     process.exit(1);
   }
 
-  const data = await response.json();
+  const data = parsedBody ?? JSON.parse(rawBody);
+
   console.info("\n✅  Upload successful!");
   console.info(`  asset:  ${assetName}`);
   console.info(`  url:    ${data.url}`);
