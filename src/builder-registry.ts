@@ -82,20 +82,24 @@ Builder.registerComponent(ProductGrid, {
     {
       name: "products",
       type: "list",
+      localized:true,
       defaultValue: [],
       copyOnAdd: true,
       subFields: [
         {
           name: "id",
           type: "string",
+          localized:true,
         },
         {
           name: "title",
           type: "string",
+          localized:true,
         },
         {
           name: "description",
           type: "string",
+          localized:true,
         },
         {
           name: "price",
@@ -118,6 +122,7 @@ Builder.registerComponent(ProductGrid, {
           name: "badge",
           type: "string",
           enum: ["new", "sale", "featured"],
+          localized:true,
         },
         {
           name: "rating",

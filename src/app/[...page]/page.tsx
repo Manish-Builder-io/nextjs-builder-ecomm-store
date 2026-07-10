@@ -24,18 +24,6 @@ export default async function Page(props: PageProps) {
           // Use the page path specified in the URL to fetch the content
           urlPath: "/" + ((await props?.params)?.page?.join("/") || ""),
         },
-        options: {
-          enrich: true,
-          includeRefs: true,
-          enrichOptions: {
-            enrichLevel: 3,
-          },
-          includeUnpublished: true,
-        },
-        enrich: true,
-        includeRefs: true,
-        locale: "de-DE",
-        includeUnpublished: true,
       })
       // Convert the result to a promise
       .toPromise();

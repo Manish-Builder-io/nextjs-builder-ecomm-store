@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+      "builder": {
+        "url": "https://cdn.builder.io/api/v1/mcp/builder-content",
+        "headers": {
+          "Authorization": "Bearer bpk-eb0a86441adb4e6cb7859772a200c679"
+        }
+      }
+    }
+  }

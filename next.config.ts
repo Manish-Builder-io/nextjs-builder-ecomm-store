@@ -26,6 +26,7 @@ const nextConfig: NextConfig = BuilderDevTools()({
     }
     return config;
   },
+  trailingSlash: true,
 });
 
 export default nextConfig;

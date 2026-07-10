@@ -3,6 +3,7 @@ import { ComponentProps } from "react";
 import { BuilderComponent, useIsPreviewing, Builder } from "@builder.io/react";
 import { builder } from "@builder.io/sdk";
 import DefaultErrorPage from "next/error";
+import Link, { type LinkProps } from "next/link";
 import '@builder.io/widgets';
 import "../builder-registry";
 
@@ -11,7 +12,7 @@ type BuilderPageProps = ComponentProps<typeof BuilderComponent>;
 // Builder Public API Key set in .env file
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
-builder.setUserAttributes({location: "IN"});
+builder.setUserAttributes({customerGroupids: "g1"});
 
 export function RenderBuilderContent({ content, model, locale = "en-US", data }: BuilderPageProps) {
   const isPreviewing = useIsPreviewing();
@@ -37,6 +38,9 @@ export function RenderBuilderContent({ content, model, locale = "en-US", data }:
             imageSrc: "https://cdn.builder.io/api/v1/image/assets%2Fdb60bf3db7fa4db7be81ef05b72bd720%2Fd44403a7f0204687882590d9b9cb2a17",
             ...data,
           }}
+          renderLink={({ href, ...props }) => (
+            <Link href={href ?? ''} {...(props as Omit<LinkProps, 'href'>)} />
+          )}
         />
       );
     } catch (error) {
