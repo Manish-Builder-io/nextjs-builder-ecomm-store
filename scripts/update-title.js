@@ -4,8 +4,8 @@ const fetchFn =
     : (...args) =>
         import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-const MODEL_NAME = "new-page";
-const ENTRY_ID = "ccb7ab7d3c6340eca158573df6debd9a";
+const MODEL_NAME = "marketing";
+const ENTRY_ID = "ba5aab4cdbd74049b8f72e822d033ecc";
 const NEW_TITLE = process.env.NEW_TITLE || "My Updated Title";
 const PRIVATE_KEY = process.env.BUILDER_PRIVATE_KEY || "";
 
