@@ -1,4 +1,5 @@
  "use client";
+import React from "react";
 import { builder, Builder } from "@builder.io/react";
 import PromoBar from "@/components/homepage/PromoBar";
 import HomeHero from "@/components/homepage/HomeHero";
@@ -22,6 +23,7 @@ import RelatedArticles from "@/components/RelatedArticles";
 import BlogCard from "@/components/BlogCard";
 import SizeChartTabs from "@/components/SizeChartTabs";
 import VerticalTabBlock from "@/components/VerticalTab/VerticalTabBlock";
+import RichTextQ from "@/components/RichTextQ";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1595,4 +1597,18 @@ Builder.registerComponent(VerticalTabBlock, {
   defaultStyles: {
     width: "100%",
   },
+});
+
+Builder.registerComponent(RichTextQ, {
+  name: "RichTextQ",
+  image: "https://icons.veryicon.com/png/o/business/mytona/layout-tab-v.png",
+  inputs: [
+    {
+      name: "quill",
+      type: "richText",
+      defaultValue:
+        "<p><a id='1' name='1'></a></p><h2>What Are the Benefits of Using an Airalo eSIM?</h2>",
+        localized: true,
+    },
+  ],
 });
