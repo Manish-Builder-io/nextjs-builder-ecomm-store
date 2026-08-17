@@ -1,6 +1,7 @@
  "use client";
 import React from "react";
 import { builder, Builder } from "@builder.io/react";
+import type { Input } from "@builder.io/sdk";
 import PromoBar from "@/components/homepage/PromoBar";
 import HomeHero from "@/components/homepage/HomeHero";
 import CategorySection from "@/components/homepage/CategorySection";
@@ -9,6 +10,7 @@ import PromoBanner from "@/components/homepage/PromoBanner";
 import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import NewsletterSection from "@/components/homepage/NewsletterSection";
 import Hero from "@/components/Hero";
+import TwoUpBanner from "@/components/TwoUpBanner";
 import ProductGrid from "@/components/ProductGrid";
 import ProductCard from "@/components/ProductCard";
 import ConversionButton from "@/components/ui/ConversionButton";
@@ -24,6 +26,7 @@ import BlogCard from "@/components/BlogCard";
 import SizeChartTabs from "@/components/SizeChartTabs";
 import VerticalTabBlock from "@/components/VerticalTab/VerticalTabBlock";
 import RichTextQ from "@/components/RichTextQ";
+import LocalizedBooleanRepro from "@/components/LocalizedBooleanRepro";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -72,6 +75,76 @@ Builder.registerComponent(Hero, {
         {
           name: "href",
           type: "string",
+        },
+      ],
+    },
+  ],
+});
+
+const backgroundImageSubFields: Input[] = [
+  {
+    name: "src",
+    type: "file",
+    allowedFileTypes: ["jpeg", "png", "svg", "webp"],
+    // Syncs the custom "alt" field with "altText" from the Builder assets library.
+    // If "alt" is empty, it's set to "altText". If they differ, prompts to update "alt".
+    onChange: (options) => {
+      const altText = options.get("altText");
+      const alt = options.get("alt");
+
+      if (!alt || (altText !== alt && confirm("Update alt text?"))) {
+        options.set("alt", altText);
+      }
+    },
+  },
+  {
+    name: "alt",
+    type: "string",
+  },
+  {
+    name: "altText",
+    type: "string",
+  },
+];
+
+Builder.registerComponent(TwoUpBanner, {
+  name: "TwoUpBanner",
+  inputs: [
+    {
+      name: "leftContent",
+      type: "object",
+      subFields: [
+        {
+          name: "header",
+          type: "string",
+        },
+        {
+          name: "subheader",
+          type: "string",
+        },
+        {
+          name: "backgroundImage",
+          type: "object",
+          subFields: backgroundImageSubFields,
+        },
+      ],
+    },
+    {
+      name: "rightContent",
+      type: "object",
+      subFields: [
+        {
+          name: "header",
+          type: "string",
+        },
+        {
+          name: "subheader",
+          type: "string",
+        },
+        {
+          name: "backgroundImage",
+          type: "object",
+          subFields: backgroundImageSubFields,
         },
       ],
     },
@@ -1597,6 +1670,11 @@ Builder.registerComponent(VerticalTabBlock, {
   defaultStyles: {
     width: "100%",
   },
+});
+
+Builder.registerComponent(LocalizedBooleanRepro, {
+  name: "LocalizedBooleanRepro",
+  inputs: [{ name: "localizedFlag", type: "boolean", localized: true }],
 });
 
 Builder.registerComponent(RichTextQ, {
