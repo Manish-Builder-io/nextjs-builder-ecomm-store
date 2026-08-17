@@ -20,7 +20,7 @@
   "dependencies": {
     "@builder.io/admin-sdk": "^0.0.8",
     "@builder.io/dev-tools": "^1.35.3",
-    "@builder.io/react": "^9.4.0",
+    "@builder.io/react": "^9.4.1",
     "@builder.io/sdk": "^6.3.0",
     "@builder.io/widgets": "^2.1.3",
     "next": "^15.5.9",
