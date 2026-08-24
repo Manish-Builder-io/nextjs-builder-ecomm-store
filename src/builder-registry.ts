@@ -27,6 +27,7 @@ import SizeChartTabs from "@/components/SizeChartTabs";
 import VerticalTabBlock from "@/components/VerticalTab/VerticalTabBlock";
 import RichTextQ from "@/components/RichTextQ";
 import LocalizedBooleanRepro from "@/components/LocalizedBooleanRepro";
+import ProductComparison from "@/components/ProductComparison";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1675,6 +1676,148 @@ Builder.registerComponent(VerticalTabBlock, {
 Builder.registerComponent(LocalizedBooleanRepro, {
   name: "LocalizedBooleanRepro",
   inputs: [{ name: "localizedFlag", type: "boolean", localized: true }],
+});
+
+// Register ProductComparison component
+Builder.registerComponent(ProductComparison, {
+  name: "ProductComparison",
+  friendlyName: "Product Comparison",
+  description:
+    "Side-by-side (or stacked) comparison cards with features, pricing from a referenced product, and CTA / secondary buttons.",
+  defaultStyles: {
+    width: "100%",
+  },
+  inputs: [
+    {
+      name: "verticalLayout",
+      friendlyName: "Vertical Layout",
+      type: "boolean",
+      defaultValue: false,
+      helperText: "Stack the comparison cards vertically instead of side by side.",
+    },
+    {
+      name: "items",
+      friendlyName: "Comparison Items",
+      type: "list",
+      localized: true,
+      copyOnAdd: true,
+      defaultValue: [],
+      subFields: [
+        {
+          name: "title",
+          type: "string",
+          localized: true,
+          defaultValue: "Product name",
+        },
+        {
+          name: "usp",
+          friendlyName: "USP",
+          type: "string",
+          localized: true,
+          helperText: "Short badge shown above the title (e.g. 'Most popular').",
+        },
+        {
+          name: "billingCycleLabel",
+          friendlyName: "Billing Cycle Label",
+          type: "string",
+          localized: true,
+          helperText: "Shown next to the price (e.g. '/month', 'excl. VAT').",
+        },
+        {
+          name: "product",
+          type: "reference",
+          model: "product",
+          helperText: "Product entry used for the image and price.",
+          options: {
+            enrich: true,
+          },
+        },
+        {
+          name: "features",
+          type: "list",
+          copyOnAdd: true,
+          defaultValue: [],
+          subFields: [
+            {
+              name: "iconSource",
+              friendlyName: "Icon",
+              type: "string",
+              enum: ["circuit", "check", "star", "bolt", "none"],
+              defaultValue: "circuit",
+            },
+            {
+              name: "content",
+              type: "longText",
+              localized: true,
+              defaultValue: "Feature description",
+            },
+          ],
+        },
+        {
+          name: "ctaButtonType",
+          friendlyName: "CTA Button Type",
+          type: "string",
+          enum: ["addToCart", "link"],
+          defaultValue: "addToCart",
+        },
+        {
+          name: "ctaButtonText",
+          friendlyName: "CTA Button Text",
+          type: "string",
+          localized: true,
+          defaultValue: "Buy now",
+        },
+        {
+          name: "ctaButtonUrl",
+          friendlyName: "CTA Button URL",
+          type: "string",
+          localized: true,
+          showIf: (options) => options.get("ctaButtonType") === "link",
+        },
+        {
+          name: "secondaryButtonType",
+          friendlyName: "Secondary Button Type",
+          type: "string",
+          enum: ["addToCart", "link"],
+          defaultValue: "link",
+        },
+        {
+          name: "secondaryButtonText",
+          friendlyName: "Secondary Button Text",
+          type: "string",
+          localized: true,
+          defaultValue: "More info",
+        },
+        {
+          name: "secondaryButtonUrl",
+          friendlyName: "Secondary Button URL",
+          type: "string",
+          localized: true,
+          showIf: (options) => options.get("secondaryButtonType") === "link",
+        },
+        {
+          name: "secondaryButtonForceNewTab",
+          friendlyName: "Open Secondary Link in New Tab",
+          type: "boolean",
+          defaultValue: false,
+          showIf: (options) => options.get("secondaryButtonType") === "link",
+        },
+        {
+          name: "secondaryButtonTrackingId",
+          friendlyName: "Secondary Button Tracking ID",
+          type: "string",
+          defaultValue: "more_info@product_comparison",
+        },
+        {
+          name: "showCardSchemes",
+          friendlyName: "Show Card Schemes",
+          type: "boolean",
+          defaultValue: false,
+          helperText: "Display accepted card scheme badges on the card.",
+        },
+      ],
+    },
+  ],
 });
 
 Builder.registerComponent(RichTextQ, {
