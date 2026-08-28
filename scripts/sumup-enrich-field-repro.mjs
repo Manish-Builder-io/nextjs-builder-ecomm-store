@@ -6,8 +6,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const BUILDER_MAIN_PUBLIC_API_KEY = 'a819f*******5';
-const BUILDER_STAGING_PUBLIC_API_KEY = 'bpk-******';
+const BUILDER_MAIN_PUBLIC_API_KEY = 'xxx';
+const BUILDER_STAGING_PUBLIC_API_KEY = 'bpk-xxxx';
 
 if (
   BUILDER_MAIN_PUBLIC_API_KEY.startsWith('<') ||
