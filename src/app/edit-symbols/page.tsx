@@ -10,10 +10,23 @@ export default async function Page() {
   const content = await builder
     // Get the page content from Builder with the specified options
     .get(builderModelName, {
+      enrich: true,
+      includeRefs: true,
+      noTraverse: false,
       options: {
         enrich: true,
+        enrichOptions: {
+          enrichLevel: 4,
+          model: {
+            "project-references": {
+              fields: "id,name,data",
+            },
+            "featured-products": {
+              fields: "id,name,data",
+            },
+          },
+        },
       },
-      enrich: true,
     })
     // Convert the result to a promise
     .toPromise();
@@ -21,7 +34,7 @@ export default async function Page() {
   return (
     <>
       {/* Render the Builder page */}
-      <RenderBuilderContent content={content} model={builderModelName} data={{ apiBaseUrl:"production-cougars-services-public.profitoptics.com/api", warehouseCode: "GADS"  }} />
+      <RenderBuilderContent content={content} options={{enrich: true}} model={builderModelName} data={{ apiBaseUrl:"production-cougars-services-public.profitoptics.com/api", warehouseCode: "GADS"  }} />
     </>
   );
 }

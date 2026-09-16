@@ -28,6 +28,7 @@ import VerticalTabBlock from "@/components/VerticalTab/VerticalTabBlock";
 import RichTextQ from "@/components/RichTextQ";
 import LocalizedBooleanRepro from "@/components/LocalizedBooleanRepro";
 import ProductComparison from "@/components/ProductComparison";
+import GenericCarousel from "@/components/GenericCarousel";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1830,6 +1831,143 @@ Builder.registerComponent(RichTextQ, {
       defaultValue:
         "<p><a id='1' name='1'></a></p><h2>What Are the Benefits of Using an Airalo eSIM?</h2>",
         localized: true,
+    },
+  ],
+});
+
+// Register GenericCarousel component
+Builder.registerComponent(GenericCarousel, {
+  name: "GenericCarousel",
+  friendlyName: "Generic Carousel",
+  description:
+    "Horizontally scrollable carousel of slides, each with an image, title, description, link, and per-slide styling.",
+  inputs: [
+    {
+      name: "slidesPerPage",
+      friendlyName: "Slides Per Page",
+      type: "string",
+      enum: ["Auto", "1", "2", "3", "4"],
+      defaultValue: "Auto",
+      localized: true,
+      helperText:
+        "Number of slides visible at once. 'Auto' sizes each slide to its content width.",
+    },
+    {
+      name: "slides",
+      friendlyName: "Slides",
+      type: "list",
+      localized: true,
+      copyOnAdd: true,
+      defaultValue: [],
+      subFields: [
+        {
+          name: "imageUrl",
+          friendlyName: "Image",
+          type: "file",
+          localized: true,
+        },
+        {
+          name: "altText",
+          friendlyName: "Alt Text",
+          type: "string",
+          localized: true,
+        },
+        {
+          name: "title",
+          friendlyName: "Title",
+          type: "string",
+          localized: true,
+          defaultValue: "Title",
+        },
+        {
+          name: "description",
+          friendlyName: "Description",
+          type: "longText",
+          localized: true,
+          defaultValue: "Description",
+        },
+        {
+          name: "link",
+          friendlyName: "Link",
+          type: "url",
+          localized: true,
+        },
+        {
+          name: "backgroundColor",
+          friendlyName: "Background Color",
+          type: "string",
+          enum: ["Highlight", "Neutral", "Dark", "Light"],
+          defaultValue: "Highlight",
+          localized: true,
+        },
+        {
+          name: "textFontColor",
+          friendlyName: "Text Font Color",
+          type: "string",
+          enum: ["Black", "White"],
+          defaultValue: "Black",
+          localized: true,
+        },
+        {
+          name: "textColumnAlignment",
+          friendlyName: "Text Column Alignment",
+          type: "string",
+          enum: ["Left", "Center", "Right"],
+          defaultValue: "Left",
+          localized: true,
+        },
+        {
+          name: "textRowAlignment",
+          friendlyName: "Text Row Alignment",
+          type: "string",
+          enum: ["Top", "Middle", "Bottom"],
+          defaultValue: "Bottom",
+          localized: true,
+        },
+        {
+          name: "hasGradientShadow",
+          friendlyName: "Has Gradient Shadow",
+          type: "boolean",
+          defaultValue: false,
+          localized: true,
+        },
+        {
+          name: "id",
+          friendlyName: "Slide ID",
+          type: "string",
+          helperText: "Internal identifier for this slide (not localized).",
+        },
+      ],
+    },
+    {
+      name: "disableHorizontalScroll",
+      friendlyName: "Disable Horizontal Scroll",
+      type: "boolean",
+      defaultValue: false,
+      localized: true,
+      helperText: "Wrap slides onto multiple rows instead of scrolling horizontally.",
+    },
+    {
+      name: "disableClick",
+      friendlyName: "Disable Click",
+      type: "boolean",
+      defaultValue: false,
+      localized: true,
+      helperText: "Prevent slides from being clickable even if a link is set.",
+    },
+    {
+      name: "maxSlideHeight",
+      friendlyName: "Max Slide Height",
+      type: "number",
+      defaultValue: 550,
+      localized: true,
+    },
+    {
+      name: "removePadding",
+      friendlyName: "Remove Padding",
+      type: "boolean",
+      defaultValue: true,
+      localized: true,
     },
   ],
 });
