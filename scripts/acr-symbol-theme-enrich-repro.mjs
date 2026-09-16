@@ -108,12 +108,38 @@ const ENRICH_LEVELS = (process.env.ENRICH_LEVELS ?? '2,3')
 
 // `by-id` mirrors a direct getContentEntry-by-id; `query-id` mirrors the
 // filtered-list shape (which is what produces `ctx: { id: undefined }` in
-// ACR's log sample). If only one shape drops references, that narrows the code
-// path considerably.
+// ACR's log sample). `url-path` mirrors ACR's actual getContentPage() call —
+// userAttributes.urlPath + userAttributes.locale targeting, no id at all —
+// which is the shape confirmed failing in production THEME_DEREF_RECOVERED
+// logs on site-storefront-content-page. Run this against
+// MODEL=site-storefront-content-page with SLUGS set. If only one shape drops
+// references, that narrows the code path considerably.
 const FETCH_SHAPES = (process.env.FETCH_SHAPES ?? 'by-id,query-id')
   .split(',')
   .map((value) => value.trim())
   .filter(Boolean);
+
+// Real content-page urlPaths from the space (mix of both theme ids seen in
+// production logs: 46ff6ad6c096449b9769595d470167b0 on most blog/press pages,
+// 9bec9a0827684f359a230d7c1d792b05 on the market-update/catalog pages) — used
+// only when a FETCH_SHAPES entry is 'url-path'. Requests rotate through this
+// list round-robin so failures can be attributed to a specific page/theme.
+const SLUGS = (
+  process.env.SLUGS ??
+  [
+    '/blog/PET-cup-lineup',
+    '/press/acr-acquires-redibagusa',
+    '/catalogs/kids-program',
+    '/q2-2026-market-update',
+    '/blog/ai-adoption',
+    '/catalogs/thermoformed-containers',
+  ].join(',')
+)
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const LOCALE = process.env.LOCALE ?? 'en-US';
 
 const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS ?? 0);
 
@@ -273,15 +299,33 @@ const describeNetworkError = (error) => {
   };
 };
 
-const buildRequestUrl = ({ shape, enrichLevel }) => {
+// Round-robins SLUGS by sequence number so a large RUNS count spreads evenly
+// across every configured page rather than hammering just the first one.
+// Modulo-safe for sequence 0 (the preflight call), where JS's `%` would
+// otherwise return -1 and index out of bounds.
+const slugForSequence = (sequence) => {
+  const index = ((sequence - 1) % SLUGS.length + SLUGS.length) % SLUGS.length;
+  return SLUGS[index];
+};
+
+const buildRequestUrl = ({ shape, enrichLevel, slug }) => {
   const url =
     shape === 'by-id'
       ? new URL(`https://cdn.builder.io/api/v3/content/${MODEL}/${ROOT_CONTENT_ID}`)
       : new URL(`https://cdn.builder.io/api/v3/content/${MODEL}`);
 
-  if (shape !== 'by-id') {
+  if (shape === 'query-id') {
     url.searchParams.set('query.id', ROOT_CONTENT_ID);
     url.searchParams.set('limit', '1');
+  } else if (shape === 'url-path') {
+    // Matches ACR's real getContentPage() call exactly: no id at all, just
+    // userAttributes targeting by urlPath (+ locale, which fetchOneWithFallback
+    // adds). This is the request shape confirmed failing in production.
+    url.searchParams.set('limit', '1');
+    url.searchParams.set(
+      'userAttributes',
+      JSON.stringify({ urlPath: slug, locale: LOCALE }),
+    );
   }
 
   url.searchParams.set('apiKey', PUBLIC_API_KEY);
@@ -323,6 +367,17 @@ const extractEntry = (json, responseOk) => {
 // now?" question. In ENG-13627 these always succeeded while the enriched
 // response kept omitting them; that combination is the fingerprint we're
 // looking for, and it's also exactly what ACR's new per-field fallback does.
+//
+// includeUnpublished=true is passed deliberately, but that means a 200 here
+// does NOT by itself prove the content is published -- archived and draft
+// entries return 200 with full data too. Four of the nine blocks the ACR
+// investigation found "dropped" from an enriched blog page turned out to be
+// archived, not published -- every earlier probe run in this investigation
+// had been reading "200 OK" as "confirmed live and published" and was wrong
+// for those four. Checking the entry's own `published` field is what actually
+// answers "would this have resolved in a live, published-only fetch" --
+// dropping an archived block from a published-content response is correct
+// behavior, not a bug, and that distinction matters for triage.
 const probeReference = async ({ model, id }) => {
   const url = new URL(`https://cdn.builder.io/api/v3/content/${model}/${id}`);
   url.searchParams.set('apiKey', PUBLIC_API_KEY);
@@ -333,12 +388,44 @@ const probeReference = async ({ model, id }) => {
   const response = await fetch(url, { headers: { Accept: 'application/json' } });
   const body = await response.text();
 
+  let parsedBody = null;
+  try {
+    parsedBody = JSON.parse(body);
+  } catch {
+    // Non-JSON body (e.g. an HTML error page) -- publishedState/nested-ref
+    // detection below just fall through to their "unknown"/empty defaults.
+  }
+  const entry = extractEntry(parsedBody, response.ok);
+  const publishedState = entry?.published ?? null;
+
+  // A block whose own content contains a further Reference field is a second
+  // hop of resolution enrichment has to perform on top of resolving this
+  // block itself. Every confirmed-published-but-still-dropped reference found
+  // in the ACR content-page investigation had this shape (a ctaLink,
+  // ctaLinks[], or logoImage field pointing at another entry); every
+  // same-model sibling with zero nested references of its own resolved fine.
+  // Surfacing this lets a report say "matches the known nested-reference
+  // failure pattern" instead of just "unexplained".
+  const nestedReferences = isObject(entry?.data)
+    ? walkReferences(entry.data, 0).map(({ path, model: nestedModel, id: nestedId }) => ({
+        path,
+        model: nestedModel,
+        id: nestedId,
+      }))
+    : [];
+
   return {
     status: response.status,
     durationMs: Date.now() - started,
     requestId: response.headers.get('x-request-id'),
     headers: pickHeaders(response.headers),
-    exists: response.status === 200,
+    // The endpoint answered with usable content -- says nothing about publish
+    // state on its own; see genuinelyPublished for that.
+    exists: response.status === 200 && entry !== null,
+    published: publishedState,
+    genuinelyPublished: publishedState === 'published',
+    hasNestedReferences: nestedReferences.length > 0,
+    nestedReferences,
     bodySnippet: body.slice(0, 300),
   };
 };
@@ -350,7 +437,8 @@ const referenceKey = (reference) => `${reference.model}::${reference.id}`;
 // ---------------------------------------------------------------------------
 
 const request = async ({ sequence, shape, enrichLevel, batch }) => {
-  const url = buildRequestUrl({ shape, enrichLevel });
+  const slug = shape === 'url-path' ? slugForSequence(sequence) : null;
+  const url = buildRequestUrl({ shape, enrichLevel, slug });
   const query = Object.fromEntries(url.searchParams.entries());
   delete query.apiKey;
 
@@ -407,6 +495,7 @@ const request = async ({ sequence, shape, enrichLevel, batch }) => {
     sequence,
     batch,
     shape,
+    slug,
     enrichLevel,
     startedAt,
     durationMs,
@@ -485,6 +574,28 @@ const probeUnresolved = async ({ reference, sequence }) => {
   return entry;
 };
 
+// Renders a single probe result into a human-readable verdict for the live
+// per-request log. `exists` alone is not enough -- see the comment on
+// probeReference for why an archived/draft entry also probes as `exists`.
+const probeVerdict = (latest, occurrences) => {
+  if (!latest) {
+    return `cached verdict from earlier probe (occurrence #${occurrences})`;
+  }
+  if (latest.probeFailed) {
+    return `PROBE_FAILED (${latest.errorCode ?? latest.errorMessage}) — transport failure on a plain single-id fetch too`;
+  }
+  if (!latest.exists) {
+    return `MISSING (status=${latest.status}) — referenced content genuinely not retrievable`;
+  }
+  if (!latest.genuinelyPublished) {
+    return `EXISTS BUT NOT PUBLISHED (published=${latest.published ?? 'unknown'}) — dropping this from a published-content response is correct behavior, not a bug`;
+  }
+  if (latest.hasNestedReferences) {
+    return 'EXISTS ON PROBE, PUBLISHED, HAS ITS OWN NESTED REFERENCE(S) — matches the known nested-reference failure pattern, not a transient drop';
+  }
+  return 'EXISTS ON PROBE, PUBLISHED, NO NESTED REFERENCE — content is live and fetches fine standalone; the enriched response dropped it anyway';
+};
+
 // Per (model,id) resolution history across every request, pass or fail. Tells
 // "one specific reference intermittently drops" apart from "drops are spread
 // evenly across all references" — the latter points at the fan-out machinery
@@ -544,6 +655,7 @@ const concurrencyHistogram = makeHistogram();
 const enrichLevelHistogram = makeHistogram();
 const shapeHistogram = makeHistogram();
 const fanOutHistogram = makeHistogram();
+const slugHistogram = makeHistogram();
 const fieldDropCounts = new Map(
   [CRITICAL_FIELD, ...EXPECTED_THEME_FIELDS].map((field) => [
     field,
@@ -668,9 +780,13 @@ const main = async () => {
     batch: 0,
   });
   if (!preflight.entryFound) {
+    const target =
+      preflight.shape === 'url-path'
+        ? `${MODEL} urlPath=${preflight.slug}`
+        : `${MODEL}/${ROOT_CONTENT_ID}`;
     console.error(
-      `\nPreflight failed: ${MODEL}/${ROOT_CONTENT_ID} returned no entry (http=${preflight.status}) for space ${fingerprint(PUBLIC_API_KEY)}.\n` +
-        'Check BUILDER_PUBLIC_API_KEY, MODEL, and ROOT_CONTENT_ID — this is a configuration problem, not the enrichment bug.',
+      `\nPreflight failed: ${target} returned no entry (http=${preflight.status}) for space ${fingerprint(PUBLIC_API_KEY)}.\n` +
+        'Check BUILDER_PUBLIC_API_KEY, MODEL, and ROOT_CONTENT_ID/SLUGS — this is a configuration problem, not the enrichment bug.',
     );
     process.exitCode = 1;
     return;
@@ -738,6 +854,9 @@ const main = async () => {
         recordHistogram(enrichLevelHistogram, result.enrichLevel, failed);
         recordHistogram(shapeHistogram, result.shape, failed);
         recordHistogram(fanOutHistogram, result.fanOutWithinDepth, failed);
+        if (result.slug) {
+          recordHistogram(slugHistogram, result.slug, failed);
+        }
         for (const field of result.unresolvedExpectedFields) {
           bumpFieldDrop(field, 'unresolved');
         }
@@ -766,7 +885,7 @@ const main = async () => {
             ? 'PARTIAL'
             : 'ok';
       console.log(
-        `${String(result.sequence).padStart(4)} ${result.shape.padEnd(9)} L${result.enrichLevel} ${status.padEnd(12)} http=${result.status} ${result.durationMs}ms fanOut=${result.fanOutWithinDepth} requestId=${result.requestId ?? '-'}${result.silentPartialResponse ? ' SILENT_200' : ''}${result.possibleTimeout ? ' NEAR_TIMEOUT' : ''}`,
+        `${String(result.sequence).padStart(4)} ${result.shape.padEnd(9)} L${result.enrichLevel} ${status.padEnd(12)} http=${result.status} ${result.durationMs}ms fanOut=${result.fanOutWithinDepth} requestId=${result.requestId ?? '-'}${result.silentPartialResponse ? ' SILENT_200' : ''}${result.possibleTimeout ? ' NEAR_TIMEOUT' : ''}${result.slug ? ` slug=${result.slug}` : ''}`,
       );
 
       if (result.absentExpectedFields.length > 0) {
@@ -781,19 +900,18 @@ const main = async () => {
           sequence: result.sequence,
         });
         const latest = probeEntry.probes.at(-1);
-        const verdict = !latest
-          ? `cached verdict from earlier probe (occurrence #${probeEntry.occurrences})`
-          : latest.probeFailed
-            ? `PROBE_FAILED (${latest.errorCode ?? latest.errorMessage}) — transport failure on a plain single-id fetch too`
-            : latest.exists
-              ? 'EXISTS ON PROBE — content is live and fetches fine standalone; the enriched response dropped it'
-              : `MISSING (status=${latest.status}) — referenced content genuinely not retrievable`;
+        const verdict = probeVerdict(latest, probeEntry.occurrences);
         console.log(
           `      -> ${reference.path} field=${reference.field} model=${reference.model} id=${reference.id} hop=${reference.enrichHopDepth}`,
         );
         console.log(
           `         probe: ${verdict}${latest && !latest.probeFailed ? ` duration=${latest.durationMs}ms requestId=${latest.requestId ?? '-'}` : ''}`,
         );
+        if (latest?.hasNestedReferences) {
+          console.log(
+            `         matches known pattern: this block's own data contains ${latest.nestedReferences.length} further reference(s) (${latest.nestedReferences.map((n) => n.model).join(', ')}) — see NESTED-REFERENCE FAILURE PATTERN in findings`,
+          );
+        }
       }
     }
   }
@@ -931,18 +1049,49 @@ const main = async () => {
   const uniqueUnresolvedReferences = Array.from(probeCache.values()).map(
     (entry) => {
       const validProbes = entry.probes.filter((probe) => !probe.probeFailed);
-      const allExist =
-        validProbes.length > 0 && validProbes.every((probe) => probe.exists);
+      const existingProbes = validProbes.filter((probe) => probe.exists);
+      const allExist = validProbes.length > 0 && existingProbes.length === validProbes.length;
       const noneExist =
-        validProbes.length > 0 && validProbes.every((probe) => !probe.exists);
-      const verdict =
-        validProbes.length === 0
-          ? 'PROBE_INCONCLUSIVE — every probe hit a transport failure rather than an HTTP response'
-          : allExist
-            ? 'EXISTS_ON_EVERY_PROBE — matches ENG-13627: content is live, resolves fine standalone, yet enrich omitted it from a 200 response'
-            : noneExist
-              ? 'CONFIRMED_MISSING — referenced content not retrievable; contradicts the published-content audit, re-check the space'
-              : 'FLAKY_ON_PROBE — direct single-id fetches also intermittently fail, so the flakiness is not confined to reference fan-out';
+        validProbes.length > 0 && existingProbes.length === 0;
+      // Publish state and nested-reference shape only mean anything once we
+      // know the content exists at all -- computed from the probes that
+      // found something, not every probe attempt.
+      const allGenuinelyPublished =
+        existingProbes.length > 0 &&
+        existingProbes.every((probe) => probe.genuinelyPublished);
+      const noneGenuinelyPublished =
+        existingProbes.length > 0 &&
+        existingProbes.every((probe) => !probe.genuinelyPublished);
+      const nestedReferenceProbe = existingProbes.find(
+        (probe) => probe.hasNestedReferences,
+      );
+
+      let verdict;
+      if (validProbes.length === 0) {
+        verdict =
+          'PROBE_INCONCLUSIVE — every probe hit a transport failure rather than an HTTP response';
+      } else if (noneExist) {
+        verdict =
+          'CONFIRMED_MISSING — referenced content not retrievable; contradicts the published-content audit, re-check the space';
+      } else if (!allExist) {
+        verdict =
+          'FLAKY_ON_PROBE — direct single-id fetches also intermittently fail, so the flakiness is not confined to reference fan-out';
+      } else if (noneGenuinelyPublished) {
+        // includeUnpublished=true means a 200 here does not prove
+        // publication -- an archived/draft entry probes as "exists" too. Four
+        // of nine "dropped" references found in the ACR investigation turned
+        // out to be exactly this: archived, not a platform bug at all.
+        verdict = `NOT_PUBLISHED (published=${existingProbes[0]?.published ?? 'unknown'}) — exists but is not published; dropping it from a published-content response is correct behavior, not an enrichment bug. Likely stale content still wired into the page/reference, not a platform issue.`;
+      } else if (!allGenuinelyPublished) {
+        verdict =
+          'FLAKY_PUBLISH_STATE — probed as published on some attempts and not-published on others; check for a publish/archive race rather than treating this as a pure enrichment bug';
+      } else if (nestedReferenceProbe) {
+        verdict = `EXISTS_ON_EVERY_PROBE_WITH_NESTED_REFERENCE — matches the known nested-reference failure pattern: this block's own data contains a further reference (model=${nestedReferenceProbe.nestedReferences[0]?.model}); the whole block drops rather than just the inner field. Confirmed genuinely published, so this is a real enrichment bug, not a content problem.`;
+      } else {
+        verdict =
+          'EXISTS_ON_EVERY_PROBE — matches ENG-13627: genuinely published, no nested reference of its own, yet enrich still omitted it from a 200 response';
+      }
+
       return {
         model: entry.model,
         id: entry.id,
@@ -950,6 +1099,9 @@ const main = async () => {
         occurrences: entry.occurrences,
         firstSeenSequence: entry.firstSeenSequence,
         probeCount: entry.probes.length,
+        genuinelyPublished: allGenuinelyPublished,
+        hasNestedReferences: nestedReferenceProbe !== undefined,
+        nestedReferences: nestedReferenceProbe?.nestedReferences ?? [],
         probes: entry.probes.map(({ bodySnippet, ...rest }) => rest),
         verdict,
         sampleBodySnippet: entry.probes.at(-1)?.bodySnippet,
@@ -1023,12 +1175,33 @@ const main = async () => {
       `${summary.networkErrorRequests} requests failed at the transport layer client-side (${summary.transientNetworkErrorRequests} matching the socket-hang-up/ECONNRESET signature), indicating the same transient connection conditions ENG-13627 attributes the drops to are present for this space.`,
     );
   }
-  const existsOnProbe = uniqueUnresolvedReferences.filter((ref) =>
-    ref.verdict.startsWith('EXISTS_ON_EVERY_PROBE'),
+  // Three distinct verdicts get bucketed separately here on purpose -- they
+  // point at three different owners. Lumping them into one "exists on probe"
+  // finding (as an earlier version of this script did) is what caused this
+  // investigation to initially misread archived content as a confirmed
+  // platform bug.
+  const notPublished = uniqueUnresolvedReferences.filter((ref) =>
+    ref.verdict.startsWith('NOT_PUBLISHED'),
   );
-  if (existsOnProbe.length > 0) {
+  const nestedReferenceMatches = uniqueUnresolvedReferences.filter(
+    (ref) => ref.hasNestedReferences && ref.genuinelyPublished,
+  );
+  const plainExistsOnProbe = uniqueUnresolvedReferences.filter(
+    (ref) => ref.verdict === 'EXISTS_ON_EVERY_PROBE',
+  );
+  if (notPublished.length > 0) {
     findings.push(
-      `${existsOnProbe.length} dropped reference(s) succeeded on every direct probe, confirming the content is published and retrievable and ruling out deleted/unpublished/stale references as the cause — the same probe result as ENG-13627.`,
+      `${notPublished.length} dropped reference(s) are NOT actually published (archived/draft) despite returning 200 on a plain probe -- dropping these from a published-content response is correct behavior, not a bug. This is a content hygiene issue (stale references still wired into a page/template), not a platform issue: ${notPublished.map((r) => `${r.model}/${r.id}`).join(', ')}.`,
+    );
+  }
+  if (nestedReferenceMatches.length > 0) {
+    findings.push(
+      `${nestedReferenceMatches.length} dropped reference(s) are confirmed genuinely published AND contain a further nested reference of their own (a ctaLink/ctaLinks/logoImage-style field pointing at another entry) -- this matches a distinct, highly reproducible failure pattern found in the ACR content-page investigation: a reference whose own data contains another reference reliably fails to resolve at all (the whole block drops, not just the inner field), independent of load or fetch shape. This is a real enrichment bug, separate from ENG-13627's transient-connection theory: ${nestedReferenceMatches.map((r) => `${r.model}/${r.id}`).join(', ')}.`,
+    );
+  }
+  if (plainExistsOnProbe.length > 0) {
+    findings.push(
+      `${plainExistsOnProbe.length} dropped reference(s) are confirmed genuinely published with no nested reference of their own, yet still dropped -- this is the ENG-13627 signature (transient, no structural explanation found).`,
     );
   }
   if (summary.configErrorRequests > 0 || summary.droppedLiveContentRequests > 0) {
@@ -1075,6 +1248,7 @@ const main = async () => {
         ),
         failureRateByFetchShape: summarizeHistogram(shapeHistogram, 'fetchShape'),
         failureRateByFanOut: summarizeHistogram(fanOutHistogram, 'fanOut'),
+        failureRateBySlug: summarizeHistogram(slugHistogram, 'slug'),
         uniqueUnresolvedReferences,
         referenceLeaderboard,
         editPreviewObservations,
@@ -1097,6 +1271,7 @@ const main = async () => {
         ),
         failureRateByFetchShape: summarizeHistogram(shapeHistogram, 'fetchShape'),
         failureRateByFanOut: summarizeHistogram(fanOutHistogram, 'fanOut'),
+        failureRateBySlug: summarizeHistogram(slugHistogram, 'slug'),
         uniqueUnresolvedReferences: uniqueUnresolvedReferences.map(
           ({ probes: _probes, sampleBodySnippet: _snippet, ...rest }) => rest,
         ),

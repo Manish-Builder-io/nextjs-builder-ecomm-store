@@ -1,4 +1,4 @@
-import { builder } from "@builder.io/sdk";
+import { builder, GetContentOptions } from "@builder.io/sdk";
 
 // Based on the customer's repro snippet. Forwards authToken/apiKey per-call
 // via `options` rather than mutating the shared `builder` singleton (this is
@@ -10,7 +10,10 @@ import { builder } from "@builder.io/sdk";
 // `options.enrich` (see the `'enrich' in options` check in its content/query
 // endpoint handling). The customer's snippet nested it as `options.options.enrich`,
 // which the SDK never reads, so referenced/enriched content silently never loads.
-export function fetchBuilderContentByUrl(modelName: string, options: any) {
+export function fetchBuilderContentByUrl(
+  modelName: string,
+  options: GetContentOptions & { apiKey?: string; authToken?: string }
+) {
   return builder
     .get(modelName, {
       ...options, // apiKey, authToken, url, userAttributes
