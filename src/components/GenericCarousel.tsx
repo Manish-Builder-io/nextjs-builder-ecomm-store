@@ -91,6 +91,9 @@ function SlideCard({
         {slide.title ? (
           <h3 className={`text-xl font-semibold ${textColorClass}`}>{slide.title}</h3>
         ) : null}
+        {slide.link ? (
+          <span className={`text-xs underline ${textColorClass} opacity-75`}>{slide.link}</span>
+        ) : null}
         {slide.description ? (
           <p className={`text-sm ${textColorClass} opacity-90`}>{slide.description}</p>
         ) : null}
