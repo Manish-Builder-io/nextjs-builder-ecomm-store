@@ -29,6 +29,7 @@ import RichTextQ from "@/components/RichTextQ";
 import LocalizedBooleanRepro from "@/components/LocalizedBooleanRepro";
 import ProductComparison from "@/components/ProductComparison";
 import GenericCarousel from "@/components/GenericCarousel";
+import TextColumns from "@/components/TextColumns";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -1968,6 +1969,98 @@ Builder.registerComponent(GenericCarousel, {
       type: "boolean",
       defaultValue: true,
       localized: true,
+    },
+  ],
+});
+
+// Register TextColumns component
+Builder.registerComponent(TextColumns, {
+  name: "TextColumns",
+  inputs: [
+    { name: "sectionTitle", type: "text", defaultValue: "Built for every business" },
+    {
+      // Repro case: localized list whose subfields are NOT individually localized.
+      // getTranslateableFields finds no nested LocalizedValue and falls back to
+      // extracting every string leaf, so the enum values below reach Smartling.
+      name: "textColumns",
+      type: "list",
+      localized: true,
+      subFields: [
+        { name: "headline", type: "text" },
+        { name: "bodyText", type: "longText" },
+        {
+          name: "textColumnAlignment",
+          type: "text",
+          enum: ["Left", "Center", "Right"],
+          defaultValue: "Left",
+        },
+        {
+          name: "textRowAlignment",
+          type: "text",
+          enum: ["Top", "Middle", "Bottom"],
+          defaultValue: "Bottom",
+        },
+        {
+          name: "backgroundColor",
+          type: "text",
+          enum: ["White", "Grey", "Black"],
+          defaultValue: "White",
+        },
+      ],
+      defaultValue: [
+        {
+          headline: "Get paid faster",
+          bodyText: "Accept card payments anywhere and see the money the next day.",
+          textColumnAlignment: "Left",
+          textRowAlignment: "Bottom",
+          backgroundColor: "White",
+        },
+        {
+          headline: "One flat rate",
+          bodyText: "No monthly fees, no lock-in contracts, no surprises.",
+          textColumnAlignment: "Center",
+          textRowAlignment: "Top",
+          backgroundColor: "Grey",
+        },
+      ],
+    },
+    {
+      // Control case: same shape, but the text subfields are marked localized.
+      // extractLocalizedLeaves matches them and the enum siblings stay out of the job.
+      name: "localizedSubfieldColumns",
+      type: "list",
+      localized: true,
+      subFields: [
+        { name: "headline", type: "text", localized: true },
+        { name: "bodyText", type: "longText", localized: true },
+        {
+          name: "textColumnAlignment",
+          type: "text",
+          enum: ["Left", "Center", "Right"],
+          defaultValue: "Right",
+        },
+        {
+          name: "textRowAlignment",
+          type: "text",
+          enum: ["Top", "Middle", "Bottom"],
+          defaultValue: "Middle",
+        },
+        {
+          name: "backgroundColor",
+          type: "text",
+          enum: ["White", "Grey", "Black"],
+          defaultValue: "Black",
+        },
+      ],
+      defaultValue: [
+        {
+          headline: "Control column",
+          bodyText: "Only this headline and body should appear in the Smartling job.",
+          textColumnAlignment: "Right",
+          textRowAlignment: "Middle",
+          backgroundColor: "Black",
+        },
+      ],
     },
   ],
 });
