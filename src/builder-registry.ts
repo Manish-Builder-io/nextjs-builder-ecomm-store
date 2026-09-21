@@ -36,6 +36,7 @@ builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
 Builder.registerComponent(Hero, {
   name: "Hero",
+  screenshot: 'https://cdn.builder.io/api/v1/image/assets%2Fdb60bf3db7fa4db7be81ef05b72bd720%2F783aab6a6e854ca499f0fd18a689771c',
   inputs: [
     {
       name: "title",
@@ -275,6 +276,7 @@ Builder.registerComponent(ProductCard, {
 
 Builder.registerComponent(Heading, {
   name: "Heading",
+  screenshot: 'https://cdn.builder.io/api/v1/image/assets%2Fdb60bf3db7fa4db7be81ef05b72bd720%2F783aab6a6e854ca499f0fd18a689771c',
   inputs: [
     {
       name: "text",
