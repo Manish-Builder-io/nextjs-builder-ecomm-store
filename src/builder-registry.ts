@@ -157,6 +157,7 @@ Builder.registerComponent(TwoUpBanner, {
 
 Builder.registerComponent(ProductGrid, {
   name: "ProductGrid",
+  screenshot: 'https://images.pexels.com/photos/39432380/pexels-photo-39432380.jpeg',
   inputs: [
     {
       name: "products",
