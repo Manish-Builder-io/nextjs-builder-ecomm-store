@@ -135,7 +135,13 @@ async function fetchEntry(
   url.searchParams.set("query.id", entryId);
   url.searchParams.set("limit", "1");
 
-  const response = await fetch(url.toString());
+  url.searchParams.set("includeUnpublished", "true");
+
+  // Private models (and unpublished entries) require the private key on reads
+  const privateKey = process.env.BUILDER_PRIVATE_API_KEY;
+  const response = await fetch(url.toString(), {
+    headers: privateKey ? { Authorization: `Bearer ${privateKey}` } : {},
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
