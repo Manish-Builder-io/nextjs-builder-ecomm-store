@@ -1,0 +1,119 @@
+{
+  "id": "581ed39714bf45bdb084f63701b5e563",
+  "fields": [
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "helperText": "Full name, e.g. \"Jane Smith\""
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "slug",
+      "type": "text",
+      "required": true,
+      "helperText": "URL slug (must be unique). For future /authors/:slug pages."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "jobTitle",
+      "type": "text",
+      "required": true,
+      "helperText": "Aligns with schema.org Person.jobTitle, e.g. \"Licensed Veterinarian on the Dutch medical team\""
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "credentials",
+      "type": "list",
+      "helperText": "Professional credentials (degree, board certs). First entry drives display name suffix.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "credentialCategory",
+          "type": "text",
+          "required": true,
+          "helperText": "e.g. \"DVM\", \"DACVB\""
+        },
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "recognizedBy",
+          "type": "text",
+          "helperText": "Issuing body, e.g. \"Cornell University\""
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "avatar",
+      "type": "file",
+      "helperText": "Used at 36px in byline, 175px in About the Author strip.",
+      "allowedFileTypes": [
+        "jpeg",
+        "png",
+        "webp"
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "shortBio",
+      "type": "longText",
+      "required": true,
+      "helperText": "About the Author/Reviewer short bio displayed at the bottom of the article."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "bio",
+      "type": "longText",
+      "required": true,
+      "helperText": "About the Author/Reviewer paragraph."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "sameAs",
+      "type": "list",
+      "helperText": "External profile URLs (LinkedIn, ORCID, university page). Key E-E-A-T signal for schema.org Person.sameAs.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "url",
+          "type": "url",
+          "required": true
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "specialties",
+      "type": "list",
+      "helperText": "e.g. \"behavioral medicine\", \"dermatology\"",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "value",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "linkType",
+      "type": "text",
+      "helperText": "Where the byline name links to. Only 'Custom URL' is supported — set the URL in the Custom URL field below.",
+      "defaultValue": "custom-url",
+      "enum": [
+        {
+          "label": "Custom URL",
+          "value": "custom-url"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "customUrl",
+      "type": "url",
+      "helperText": "The destination URL for the byline link. External (e.g. https://www.dutch.com/…) opens in a new tab; relative paths stay internal. If empty, the byline renders as plain text."
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "id": "68c3ce0859774f54acacb4b42baf1b37",
+  "fields": [
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "title",
+      "type": "text",
+      "helperText": "Article title."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "slug",
+      "type": "text",
+      "required": true,
+      "helperText": "URL slug — lowercase words separated by hyphens, no leading slash (e.g. chihuahua-mix-health). Must be unique within its primaryCategory. Drives /blogs/:primaryCategory/:slug.",
+      "regex": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "message": "Lowercase words separated by hyphens, no leading slash (e.g. chihuahua-mix-health)."
+      }
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "primaryCategory",
+      "type": "text",
+      "required": true,
+      "helperText": "Species audience. Drives breadcrumb, route, and related-content queries.",
+      "enum": [
+        {
+          "label": "Dogs",
+          "value": "dogs"
+        },
+        {
+          "label": "Cats",
+          "value": "cats"
+        },
+        {
+          "label": "General",
+          "value": "general"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "tags",
+      "type": "list",
+      "helperText": "1–5 topical tags. Drives chip row and related-content queries.",
+      "max": 5,
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "tag",
+          "type": "reference",
+          "model": "tag"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "heroImage",
+      "type": "file",
+      "allowedFileTypes": [
+        "jpeg",
+        "png",
+        "webp"
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "heroImageAlt",
+      "type": "text",
+      "helperText": "Alt text for the hero image (accessibility)."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "author",
+      "type": "reference",
+      "required": true,
+      "helperText": "Required. Select the article's author. If no authors are available, create one in the Author model first.",
+      "model": "author"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "showAuthorBio",
+      "type": "boolean",
+      "helperText": "Show the author's short bio in the 'About the Author' section. Uncheck to hide the bio for this article.",
+      "defaultValue": true,
+      "showIf": "options.get('author')"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "medicallyReviewedBy",
+      "type": "reference",
+      "helperText": "Often the same as author. Omit to hide the \"Medically reviewed by\" line.",
+      "model": "author"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "showReviewerBio",
+      "type": "boolean",
+      "helperText": "Show the reviewer's short bio in the 'About the Reviewer' section. Uncheck to hide the bio for this article.",
+      "defaultValue": true,
+      "showIf": "options.get('medicallyReviewedBy')"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "publishedAt",
+      "type": "date"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "updatedAt",
+      "type": "date",
+      "helperText": "Means the content changed (fix a typo, add a paragraph). Shown as \"Updated April 2026\"."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "lastReviewed",
+      "type": "date",
+      "helperText": "Means medical review was re-confirmed. Distinct from updatedAt. Drives schema.org reviewedBy.lastReviewed."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "readingTime",
+      "type": "number",
+      "helperText": "Estimated reading time in minutes. Stored manually.",
+      "min": 1
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "shortAnswer",
+      "type": "longText",
+      "helperText": "The \"Short Answer\" block below the hero. Fixed position in the design."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "keyTakeaways",
+      "type": "list",
+      "helperText": "3–4 bullet points for the Key Takeaways card. Aim for at or below 115 characters per takeaway to keep the card compact and readable.",
+      "min": 3,
+      "max": 4,
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "text",
+          "type": "text",
+          "regex": {
+            "pattern": "^[\\s\\S]{0,115}$",
+            "message": "Keep each takeaway at or below 115 characters."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "references",
+      "type": "list",
+      "helperText": "Citations rendered at the end of the article.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "text",
+          "type": "longText"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "conditionName",
+      "type": "text",
+      "helperText": "Medical condition this article is about (e.g. \"New World screwworm myiasis\"). Drives the about → MedicalCondition node in JSON-LD. Leave blank for non-condition articles. Only used on medically reviewed articles.",
+      "showIf": "options.get('medicallyReviewedBy')"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "conditionAlternateNames",
+      "type": "list",
+      "helperText": "Synonyms / alternate names for the condition (e.g. \"NWS\", \"Cochliomyia hominivorax infestation\"). Populates alternateName on the MedicalCondition node.",
+      "showIf": "options.get('conditionName')",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "value",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "faq",
+      "type": "list",
+      "helperText": "Inline per-article FAQs. Renders as an accordion at the end of the article. Drives FAQPage JSON-LD.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "question",
+          "type": "text"
+        },
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "answer",
+          "type": "longText"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "body",
+      "type": "uiBlocks",
+      "helperText": "Drag-and-drop article body. Use the insert menu to add blog components."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "metaTitle",
+      "type": "text",
+      "helperText": "SEO title override. Defaults to title if empty.",
+      "advanced": true
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "metaDescription",
+      "type": "text",
+      "helperText": "SEO meta description.",
+      "advanced": true
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "ogImage",
+      "type": "file",
+      "helperText": "Open Graph image override. Defaults to heroImage if empty.",
+      "advanced": true,
+      "allowedFileTypes": [
+        "jpeg",
+        "png",
+        "webp"
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "noindex",
+      "type": "boolean",
+      "helperText": "Set to true to add noindex meta tag.",
+      "defaultValue": false,
+      "advanced": true
+    }
+  ]
+}

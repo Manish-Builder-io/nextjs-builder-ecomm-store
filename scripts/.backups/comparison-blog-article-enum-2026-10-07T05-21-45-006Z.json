@@ -1,0 +1,183 @@
+{
+  "id": "baa388e5cebf49a88b6df1e5f47cd0a8",
+  "fields": [
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "title",
+      "type": "text",
+      "helperText": "Article title."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "slug",
+      "type": "text",
+      "required": true,
+      "helperText": "URL slug — lowercase words separated by hyphens, no leading slash (e.g. chihuahua-vs-pug). Must be unique. Drives /blogs/:primaryCategory/:slug.",
+      "regex": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "message": "Lowercase words separated by hyphens, no leading slash (e.g. chihuahua-vs-pug)."
+      }
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "primaryCategory",
+      "type": "text",
+      "required": true,
+      "helperText": "Species audience. Drives breadcrumb, route, and related-content queries.",
+      "enum": [
+        {
+          "label": "Dogs",
+          "value": "dogs"
+        },
+        {
+          "label": "Cats",
+          "value": "cats"
+        },
+        {
+          "label": "General",
+          "value": "general"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "tags",
+      "type": "list",
+      "helperText": "1–5 topical tags. Drives chip row and related-content queries.",
+      "max": 5,
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "tag",
+          "type": "reference",
+          "model": "tag"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "competitorName",
+      "type": "text",
+      "required": true,
+      "helperText": "Name of the competitor column (e.g., 'Other Vets')"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "comparisonRows",
+      "type": "list",
+      "helperText": "Rows for the comparison table.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "attribute",
+          "type": "text",
+          "required": true,
+          "helperText": "Row label (e.g., 'Average exam cost')."
+        },
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "dutchValue",
+          "type": "text",
+          "required": true,
+          "helperText": "Use 'check', 'x', or free text like '$0'"
+        },
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "competitorValue",
+          "type": "text",
+          "required": true,
+          "helperText": "Use 'check', 'x', or free text like '$160'"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "ctaLabel",
+      "type": "text",
+      "helperText": "CTA button text in comparison table",
+      "defaultValue": "Start your membership"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "ctaHref",
+      "type": "text",
+      "helperText": "CTA button link",
+      "defaultValue": "/"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "publishedAt",
+      "type": "date"
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "updatedAt",
+      "type": "date",
+      "helperText": "Means the content changed (fix a typo, add a paragraph). Shown as \"Updated April 2026\"."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "shortAnswer",
+      "type": "longText",
+      "helperText": "The \"Short Answer\" block below the header. Fixed position in the design."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "faq",
+      "type": "list",
+      "helperText": "Inline per-article FAQs. Renders as an accordion at the end of the article. Drives FAQPage JSON-LD.",
+      "subFields": [
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "question",
+          "type": "text"
+        },
+        {
+          "@type": "@builder.io/core:Field",
+          "name": "answer",
+          "type": "longText"
+        }
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "body",
+      "type": "uiBlocks",
+      "helperText": "Drag-and-drop article body. Use the insert menu to add blog components."
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "metaTitle",
+      "type": "text",
+      "helperText": "SEO title override. Defaults to title if empty.",
+      "advanced": true
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "metaDescription",
+      "type": "text",
+      "helperText": "SEO meta description.",
+      "advanced": true
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "ogImage",
+      "type": "file",
+      "helperText": "Open Graph image override.",
+      "advanced": true,
+      "allowedFileTypes": [
+        "jpeg",
+        "png",
+        "webp"
+      ]
+    },
+    {
+      "@type": "@builder.io/core:Field",
+      "name": "noindex",
+      "type": "boolean",
+      "helperText": "Set to true to add noindex meta tag.",
+      "defaultValue": false,
+      "advanced": true
+    }
+  ]
+}
