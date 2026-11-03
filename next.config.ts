@@ -7,11 +7,6 @@ const nextConfig: NextConfig = BuilderDevTools()({
   images: {
     domains: ["cdn.builder.io", "images.unsplash.com"],
   },
-  i18n: {
-    locales: ["en-US", "ca-ES", "fr-FR"],
-    defaultLocale: "en-US",
-    localeDetection: false,
-  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Suppress the isolated-vm warning in Docker/Node environments

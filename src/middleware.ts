@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { URL_LOCALES, getUrlLocale } from "@/i18n/config";
 
-// Repro-only middleware (variant-container-repro). Writes the Builder user-attributes cookie on
-// the server so the SSR inline script sees it on the very first visit.
-// Switch locale with ?locale=fr-FR | en-US | ca-ES (default en-US).
-export function middleware(request: NextRequest) {
+// Repro-only: writes the Builder user-attributes cookie on the server so the SSR inline script
+// sees it on the very first visit. Switch locale with ?locale=fr-FR | en-US | ca-ES.
+function variantContainerRepro(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale") ?? "en-US";
   const response = NextResponse.next();
   // NOTE: must be written RAW (not URL-encoded). The SSR variants script does
@@ -19,6 +19,29 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/variant-container-repro")) {
+    return variantContainerRepro(request);
+  }
+
+  // /fr-FR/... is served by app/localized/[locale]/[[...page]] (URL stays unchanged). A real
+  // [locale] segment at the app root would shadow the root [...page] catch-all for every
+  // single-segment URL, hence the rewrite. The cookie lets non-prefixed pages read the locale.
+  // Un-prefixed URLs are left alone and render in the default locale.
+  const locale = getUrlLocale(pathname);
+  if (!locale) return NextResponse.next();
+  const url = request.nextUrl.clone();
+  url.pathname = `/localized${pathname}`;
+  const response = NextResponse.rewrite(url);
+  response.cookies.set("NEXT_LOCALE", locale, { path: "/" });
+  return response;
+}
+
 export const config = {
-  matcher: ["/variant-container-repro/:path*"],
+  matcher: [
+    "/variant-container-repro/:path*",
+    ...URL_LOCALES.map((l) => `/${l}/:path*`),
+  ],
 };
