@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { URL_LOCALES, getUrlLocale } from "@/i18n/config";
+import { getUrlLocale } from "@/i18n/config";
 
 // Repro-only: writes the Builder user-attributes cookie on the server so the SSR inline script
 // sees it on the very first visit. Switch locale with ?locale=fr-FR | en-US | ca-ES.
@@ -42,6 +42,9 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/variant-container-repro/:path*",
-    ...URL_LOCALES.map((l) => `/${l}/:path*`),
+    // Must be literals: Next statically analyzes `config`, so no spread/map here.
+    "/en-US/:path*",
+    "/ca-ES/:path*",
+    "/fr-FR/:path*",
   ],
 };
