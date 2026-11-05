@@ -173,8 +173,10 @@ async function countContentByModel() {
       }
     }
   `);
-  // Component models have no content entries.
-  const models = (data.models ?? []).filter((m) => m.kind !== "component");
+  // Component-kind models can hold entries too (e.g. figma-imports). The
+  // content API is addressed by name, so duplicate names are scanned once.
+  const seen = new Set();
+  const models = (data.models ?? []).filter((m) => !seen.has(m.name) && seen.add(m.name));
 
   process.stdout.write(`  Scanning ${models.length} models for content`);
   const out = [];
@@ -438,14 +440,14 @@ async function deleteModelsFlow(space, state) {
   const counts = new Map((state.models ?? []).map((m) => [m.model.id, m.ids.length]));
   console.info("\n── MODELS (page is protected) ──");
   models.forEach((m, i) =>
-    console.info(`  ${String(i + 1).padStart(3)}) ${m.name}  kind=${m.kind}  entries=${counts.get(m.id) ?? 0}`)
+    console.info(`  ${String(i + 1).padStart(3)}) ${m.name}  kind=${m.kind}  entries=${counts.get(m.id) ?? 0}  id=${m.id}`)
   );
   console.info("\n⚠️  Deleting a model also removes every entry in it. Empty content first (option 1) if unsure.");
 
   const picked = await pickFromList("Models to delete (e.g. 1,3,5-7 or 'all', blank to cancel)", models);
   if (!picked.length) return;
 
-  console.info(`\nThis will delete models: ${picked.map((m) => m.name).join(", ")}`);
+  console.info(`\nThis will delete models: ${picked.map((m) => `${m.name} (${m.id.slice(0, 8)})`).join(", ")}`);
   if (!(await confirmDestructive(space, `delete ${picked.length} model(s)`))) return;
 
   const results = await runPool(picked, async (m) => {
