@@ -4,10 +4,12 @@ import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useLocalizedHref } from "@/i18n/useLocale";
 
 export default function CartDrawer() {
   const { items, isOpen, totalItems, subtotal, removeItem, updateQty, clearCart, closeCart } =
     useCart();
+  const localize = useLocalizedHref();
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function CartDrawer() {
               <p className="mt-1 text-sm text-gray-500">Add some items to get started.</p>
             </div>
             <Link
-              href="/collections/all"
+              href={localize("/collections/all")}
               onClick={closeCart}
               className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
             >
@@ -186,7 +188,7 @@ export default function CartDrawer() {
 
               {/* CTA */}
               <Link
-                href="/checkout"
+                href={localize("/checkout")}
                 onClick={closeCart}
                 className="flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 hover:bg-blue-700 transition-colors"
               >
@@ -198,7 +200,7 @@ export default function CartDrawer() {
 
               <div className="flex items-center justify-between">
                 <Link
-                  href="/collections/all"
+                  href={localize("/collections/all")}
                   onClick={closeCart}
                   className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                 >

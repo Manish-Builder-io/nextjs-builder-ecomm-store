@@ -53,6 +53,25 @@
   --foreground: 237 237 237;
 }
 
+/* Design tokens -> Tailwind utilities (values come from src/design-tokens/tokens.ts) */
+@theme inline {
+  --color-brand: var(--ds-color-primary);
+  --color-brand-hover: var(--ds-color-primary-hover);
+  --color-brand-contrast: var(--ds-color-primary-contrast);
+  --color-ink: var(--ds-color-text);
+  --color-muted: var(--ds-color-text-muted);
+  --color-surface: var(--ds-color-surface);
+  --color-surface-alt: var(--ds-color-surface-alt);
+  --color-line: var(--ds-color-border);
+  --color-accent: var(--ds-color-accent);
+  --color-success: var(--ds-color-success);
+  --color-warning: var(--ds-color-warning);
+  --color-danger: var(--ds-color-danger);
+  --radius-card: var(--ds-radius-lg);
+  --radius-control: var(--ds-radius-md);
+  --shadow-card: var(--ds-shadow-md);
+}
+
 body {
   background: rgb(var(--background));
   color: rgb(var(--foreground));

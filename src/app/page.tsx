@@ -1,23 +1,15 @@
-import { builder } from "@builder.io/sdk";
+import type { Metadata } from "next";
 import HomeBuilderContent from "@/components/HomeBuilderContent";
+import { getBuilderPage } from "@/lib/builder-page";
+import { getRequestLocale } from "@/lib/targeting";
+import { metadataFromBuilder } from "@/lib/builder-metadata";
 
-// Builder Public API Key set in .env file
-builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getBuilderPage("/", "page", { locale: await getRequestLocale() });
+  return metadataFromBuilder(content, "/", await getRequestLocale());
+}
 
 export default async function Page() {
-  let content = null;
-
-  try {
-    content =
-      (await builder
-        .get("page", {
-          userAttributes: { urlPath: "/" },
-          options: { includeRefs: true, enrich: true },
-        })
-        .toPromise()) ?? null;
-  } catch {
-    // fall through — HomeBuilderContent handles null content
-  }
-
+  const content = await getBuilderPage("/", "page", { locale: await getRequestLocale() });
   return <HomeBuilderContent content={content} />;
 }

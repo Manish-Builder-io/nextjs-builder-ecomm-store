@@ -17,6 +17,9 @@ export interface Product {
   imageSrc?: string;
   badge?: "new" | "sale" | "featured";
   tags?: string[];
+  /** Additional gallery images (first is usually imageSrc) */
+  images?: string[];
+  inStock?: boolean;
 }
 
 

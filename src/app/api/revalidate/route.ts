@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { checkSecret } from "@/lib/api-auth";
 
 // Helper to create CORS headers
 function getCorsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Signature, X-Builder-Signature, X-Webhook-Event",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Signature, X-Builder-Signature, X-Webhook-Event, X-Api-Secret",
   };
 }
 
@@ -15,6 +16,10 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  // When REVALIDATE_SECRET is set it is enforced (append ?secret=... to the Builder webhook URL).
+  if (checkSecret(request, "REVALIDATE_SECRET") === "denied") {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401, headers: getCorsHeaders() });
+  }
   try {
     // Handle webhook validation requests (Builder.io sends these to verify the endpoint)
     const url = request.nextUrl;
@@ -39,12 +44,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const headers = Object.fromEntries(request.headers.entries());
 
-    // Log webhook data for testing
-    console.log("=== Webhook Received ===");
-    console.log("Timestamp:", new Date().toISOString());
-    console.log("Headers:", JSON.stringify(headers, null, 2));
-    console.log("Body:", JSON.stringify(body, null, 2));
-    console.log("======================");
+    // Don't log headers/body: they can carry signatures and customer content.
 
     // Extract common webhook fields
     // Builder.io webhook payload: body.content.data.url holds the page path
@@ -59,9 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Optional: Validate webhook signature if provided
     const signature = headers["x-signature"] || headers["x-builder-signature"];
-    if (process.env.WEBHOOK_SECRET && signature) {
-      console.log("Signature received:", signature);
-    }
+    void signature;
 
     // Handle revalidation based on webhook data
     const revalidatedPaths: string[] = [];
@@ -124,6 +122,12 @@ export async function GET(request: NextRequest) {
   const testPath = searchParams.get("path");
 
   if (testPath) {
+    // Anyone being able to purge arbitrary paths is a cache-busting DoS vector: require the secret
+    // (and refuse outright in production if none is configured).
+    const auth = checkSecret(request, "REVALIDATE_SECRET");
+    if (auth === "denied" || (auth === "unconfigured" && process.env.NODE_ENV === "production")) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401, headers: getCorsHeaders() });
+    }
     revalidatePath(testPath);
     return NextResponse.json({
       success: true,

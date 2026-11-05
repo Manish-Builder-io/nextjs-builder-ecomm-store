@@ -4,8 +4,28 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = BuilderDevTools()({
   // Enable standalone output for Docker
   output: 'standalone',
+  poweredByHeader: false,
   images: {
-    domains: ["cdn.builder.io", "images.unsplash.com"],
+    // `domains` is deprecated; remotePatterns is the supported, stricter form
+    remotePatterns: [
+      { protocol: "https", hostname: "cdn.builder.io" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Builder's visual editor loads the site in an iframe, so framing is allowed for Builder only
+          // (X-Frame-Options would block the editor).
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self' https://builder.io https://*.builder.io" },
+        ],
+      },
+    ];
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useLocalizedHref } from "@/i18n/useLocale";
+import SearchBox from "@/components/commerce/SearchBox";
+import LocaleSwitcher from "@/components/commerce/LocaleSwitcher";
 
 const NAV_LINKS = [
   { label: "Shop", href: "/collections/all" },
@@ -13,7 +16,10 @@ const NAV_LINKS = [
 
 export function Header() {
   const { totalItems, openCart } = useCart();
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const localize = useLocalizedHref();
+  // Active-link matching ignores the locale prefix (/fr-FR/collections/all == /collections/all)
+  const pathname = rawPathname.replace(/^\/(en-US|ca-ES|fr-FR)(?=\/|$)/, "") || "/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -40,7 +46,7 @@ export function Header() {
           {/* Logo + Desktop Nav */}
           <div className="flex items-center gap-10">
             <Link
-              href="/"
+              href={localize("/")}
               className="text-xl font-bold tracking-tight text-gray-900 hover:text-blue-600 transition-colors"
             >
               Store
@@ -51,7 +57,7 @@ export function Header() {
                 return (
                   <Link
                     key={href}
-                    href={href}
+                    href={localize(href)}
                     className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                       active
                         ? "bg-gray-100 text-gray-900"
@@ -68,17 +74,24 @@ export function Header() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             {/* Search */}
-            <div className="hidden sm:flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-              </svg>
-              <input
-                type="search"
-                placeholder="Search products…"
-                aria-label="Search products"
-                className="w-44 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
-              />
+            <div className="hidden sm:block w-56">
+              <SearchBox />
             </div>
+
+            <div className="hidden md:block">
+              <LocaleSwitcher />
+            </div>
+
+            {/* Account */}
+            <Link
+              href={localize("/account")}
+              aria-label="Account"
+              className="rounded-full p-2.5 text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM4 21a8 8 0 0 1 16 0" />
+              </svg>
+            </Link>
 
             {/* Cart button */}
             <button
@@ -123,16 +136,8 @@ export function Header() {
       {mobileOpen && (
         <div className="border-t border-gray-100 bg-white px-4 pb-4 md:hidden">
           {/* Mobile search */}
-          <div className="mb-3 mt-3 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2">
-            <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-            </svg>
-            <input
-              type="search"
-              placeholder="Search products…"
-              aria-label="Search products"
-              className="flex-1 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
-            />
+          <div className="mb-3 mt-3">
+            <SearchBox />
           </div>
           <nav aria-label="Mobile primary" className="flex flex-col gap-1">
             {NAV_LINKS.map(({ label, href }) => {
@@ -140,7 +145,7 @@ export function Header() {
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={localize(href)}
                   className={`rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-blue-50 text-blue-700"
@@ -152,6 +157,7 @@ export function Header() {
               );
             })}
           </nav>
+          <div className="mt-3"><LocaleSwitcher /></div>
         </div>
       )}
     </header>
