@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkSecret } from "@/lib/api-auth";
 
 // Helper to create CORS headers
 function getCorsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Api-Secret",
   };
 }
 
@@ -22,6 +23,14 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  // This route writes to Builder with the private API key, so it must never be open to the internet.
+  const auth = checkSecret(request, "CONTENT_API_SECRET");
+  if (auth !== "ok") {
+    return NextResponse.json(
+      { success: false, error: auth === "unconfigured" ? "CONTENT_API_SECRET is not configured" : "Unauthorized" },
+      { status: auth === "unconfigured" ? 503 : 401, headers: getCorsHeaders() }
+    );
+  }
   try {
     // Get Builder.io private API key from environment
     const privateKey = process.env.BUILDER_PRIVATE_API_KEY;

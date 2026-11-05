@@ -30,6 +30,8 @@ import LocalizedBooleanRepro from "@/components/LocalizedBooleanRepro";
 import ProductComparison from "@/components/ProductComparison";
 import GenericCarousel from "@/components/GenericCarousel";
 import TextColumns from "@/components/TextColumns";
+import { builderDesignTokens } from "@/design-tokens/tokens";
+import "@/builder-registry-commerce";
 
 builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!);
 
@@ -508,18 +510,22 @@ Builder.register("editor.settings", {
   allowOverridingTokens: true,
   designTokens: {
     colors: [
+      ...builderDesignTokens.colors,
+      // Legacy tokens still referenced by existing Builder content
       { name: "Brand Red", value: "var(--red, #ff0000)" },
       { name: "Brand Blue", value: "rgba(93, 150, 255, 1)" },
     ],
     spacing: [
+      ...builderDesignTokens.spacing,
       { name: "Large", value: "var(--space-large, 20px)" },
       { name: "Small", value: "var(--space-small, 10px)" },
       { name: "Tiny", value: "5px" },
     ],
     fontFamily: [
+      ...builderDesignTokens.fontFamily,
       { name: 'Serif Font', value: 'var(--serif-font, Times, serif)' },
       { name: 'Primary Font', value: 'Roboto, sans-serif' },
-    ]
+    ],
   },
 });
 

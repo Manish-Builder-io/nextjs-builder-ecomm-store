@@ -4,6 +4,8 @@ import { BuilderComponent, useIsPreviewing, Builder } from "@builder.io/react";
 import { builder } from "@builder.io/sdk";
 import DefaultErrorPage from "next/error";
 import Link, { type LinkProps } from "next/link";
+import { usePathname } from "next/navigation";
+import { getUrlLocale, localizePath } from "@/i18n/config";
 import '@builder.io/widgets';
 import "../builder-registry";
 
@@ -16,6 +18,8 @@ builder.setUserAttributes({customerGroupids: "g1"});
 
 export function RenderBuilderContent({ content, model, locale = "en-US", data }: BuilderPageProps) {
   const isPreviewing = useIsPreviewing();
+  // Keep internal links inside the visitor's URL locale (/fr-FR/... stays /fr-FR/...)
+  const urlLocale = getUrlLocale(usePathname() ?? "/");
 
   if(Builder.isEditing || Builder.isPreviewing){
     builder.authToken = process.env.BUILDER_PRIVATE_API_KEY ?? null;
@@ -39,7 +43,7 @@ export function RenderBuilderContent({ content, model, locale = "en-US", data }:
             ...data,
           }}
           renderLink={({ href, ...props }) => (
-            <Link href={href ?? ''} {...(props as Omit<LinkProps, 'href'>)} />
+            <Link href={localizePath(href ?? '', urlLocale)} {...(props as Omit<LinkProps, 'href'>)} />
           )}
         />
       );

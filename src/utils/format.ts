@@ -4,7 +4,7 @@ export function formatPrice(
   locale: string = "Default"
 ): string {
   try {
-    return new Intl.NumberFormat(locale, {
+    return new Intl.NumberFormat(locale === "Default" ? "en-US" : locale, {
       style: "currency",
       currency,
       maximumFractionDigits: 2,

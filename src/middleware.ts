@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getUrlLocale } from "@/i18n/config";
+import { getUrlLocale, stripUrlLocale } from "@/i18n/config";
 
 // Repro-only: writes the Builder user-attributes cookie on the server so the SSR inline script
 // sees it on the very first visit. Switch locale with ?locale=fr-FR | en-US | ca-ES.
@@ -26,25 +26,29 @@ export function middleware(request: NextRequest) {
     return variantContainerRepro(request);
   }
 
-  // /fr-FR/... is served by app/localized/[locale]/[[...page]] (URL stays unchanged). A real
-  // [locale] segment at the app root would shadow the root [...page] catch-all for every
-  // single-segment URL, hence the rewrite. The cookie lets non-prefixed pages read the locale.
-  // Un-prefixed URLs are left alone and render in the default locale.
+  // Expose the (locale-stripped) path and URL locale to server components via request headers,
+  // so layout-level Builder sections can target on urlPath/locale. Always overwritten, never trusted
+  // from the client.
   const locale = getUrlLocale(pathname);
-  if (!locale) return NextResponse.next();
+  const barePath = stripUrlLocale(pathname).replace(/(.)\/+$/, "$1");
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", barePath);
+  if (locale) requestHeaders.set("x-locale", locale);
+  else requestHeaders.delete("x-locale");
+
+  // /fr-FR/cart/ is rewritten to /cart/ (the URL in the browser stays unchanged) and the locale travels
+  // in the x-locale header, so EVERY route (Builder catch-all, cart, PDP, ...) is locale-aware without a
+  // [locale] segment (which would shadow the root [...page] catch-all). The cookie lets un-prefixed
+  // pages keep the visitor's locale; with no cookie they render in the default locale.
+  if (!locale) return NextResponse.next({ request: { headers: requestHeaders } });
   const url = request.nextUrl.clone();
-  url.pathname = `/localized${pathname}`;
-  const response = NextResponse.rewrite(url);
-  response.cookies.set("NEXT_LOCALE", locale, { path: "/" });
+  url.pathname = stripUrlLocale(pathname);
+  const response = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+  response.cookies.set("NEXT_LOCALE", locale, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
   return response;
 }
 
 export const config = {
-  matcher: [
-    "/variant-container-repro/:path*",
-    // Must be literals: Next statically analyzes `config`, so no spread/map here.
-    "/en-US/:path*",
-    "/ca-ES/:path*",
-    "/fr-FR/:path*",
-  ],
+  // Must be a literal: Next statically analyzes `config`. Skips Next internals, API routes and files.
+  matcher: ["/((?!_next/|api/|.*\\..*).*)"],
 };

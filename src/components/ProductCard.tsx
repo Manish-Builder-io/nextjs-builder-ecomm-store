@@ -1,11 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Product } from "@/types/product";
 import Price from "@/components/ui/Price";
 import RatingStars from "@/components/ui/RatingStars";
 import Badge from "@/components/ui/Badge";
 import { useCart } from "@/context/CartContext";
+import { useLocalizedHref } from "@/i18n/useLocale";
+import WishlistButton from "@/components/commerce/WishlistButton";
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +17,8 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem, openCart } = useCart();
   const [added, setAdded] = useState(false);
+  const localize = useLocalizedHref();
+  const href = localize(`/products/${product.id}`);
 
   const handleAddToCart = () => {
     addItem(product);
@@ -25,6 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group relative rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="relative aspect-[4/3] bg-gray-50">
+        <Link href={href} aria-label={product.title} className="absolute inset-0 z-0" />
         {product.imageSrc ? (
           <Image
             src={product.imageSrc}
@@ -36,8 +42,9 @@ export function ProductCard({ product }: ProductCardProps) {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50" />
         )}
+        <WishlistButton product={product} className="absolute right-3 top-3 z-10" />
         {product.badge && (
-          <div className="absolute left-3 top-3">
+          <div className="absolute left-3 top-3 pointer-events-none">
             <Badge
               variant={
                 product.badge === "sale"
@@ -55,7 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
       <div className="p-4">
         <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug">
-          {product.title}
+          <Link href={href} className="hover:underline">{product.title}</Link>
         </h3>
         <p className="mt-1 text-xs text-gray-500 line-clamp-2">{product.description}</p>
 
