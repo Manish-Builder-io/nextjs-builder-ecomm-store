@@ -14,7 +14,7 @@
  *   node scripts/get-space-info.js <USER_ID>         # also resolve USER_ID against members
  *
  * Env:
- *   BUILDER_PRIVATE_KEY (optional)  Overrides the hard-coded key below.
+ *   BUILDER_PRIVATE_KEY (required) Builder private key (bpk-...). Required.
  *
  * Docs: https://www.builder.io/c/docs/admin-api-manage-spaces
  */
@@ -23,7 +23,7 @@ import process from "node:process";
 
 const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 const PRIVATE_KEY =
-  process.env.BUILDER_PRIVATE_KEY || "REMOVED_BUILDER_PRIVATE_KEY";
+  process.env.BUILDER_PRIVATE_KEY || "";
 
 async function main() {
   if (!PRIVATE_KEY) {
