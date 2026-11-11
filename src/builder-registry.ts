@@ -1336,7 +1336,7 @@ Builder.registerComponent(ArticleSeoSettings, {
       name: "seo",
       friendlyName: "SEO",
       type: "object",
-      defaultValue: { pageTitle: "", description: "" },
+      defaultValue: { pageTitle: "", description: "", keywords: [] },
       subFields: [
         {
           name: "pageTitle",
@@ -1348,6 +1348,48 @@ Builder.registerComponent(ArticleSeoSettings, {
           name: "description",
           friendlyName: "Description",
           type: "longText",
+          required: false,
+        },
+        // Nested list inside the seo object, with required sub-fields
+        {
+          name: "keywords",
+          friendlyName: "Keywords",
+          type: "list",
+          defaultValue: [],
+          subFields: [
+            {
+              name: "keyword",
+              friendlyName: "Keyword",
+              type: "text",
+              required: true,
+            },
+            {
+              name: "notes",
+              friendlyName: "Notes",
+              type: "text",
+              required: false,
+            },
+          ],
+        },
+      ],
+    },
+    // Top-level object with sub-fields (one required)
+    {
+      name: "socialCard",
+      friendlyName: "Social Card",
+      type: "object",
+      defaultValue: { title: "", imageUrl: "" },
+      subFields: [
+        {
+          name: "title",
+          friendlyName: "Card Title",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "imageUrl",
+          friendlyName: "Image URL",
+          type: "url",
           required: false,
         },
       ],
