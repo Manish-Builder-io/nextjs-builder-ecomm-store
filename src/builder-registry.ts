@@ -20,6 +20,7 @@ import Heading from "@/components/Heading";
 import HeaderV1 from "@/components/Header-V1";
 import ExploreColleges from "@/components/ExploreColleges";
 import ValidationTestComponent from "@/components/ValidationTestComponent";
+import ArticleSeoSettings from "@/components/ArticleSeoSettings";
 import VideoPlayer from "@/components/VideoPlayer";
 import RelatedArticles from "@/components/RelatedArticles";
 import BlogCard from "@/components/BlogCard";
@@ -1320,6 +1321,36 @@ Builder.registerComponent(ValidationTestComponent, {
       required: true,
       showIf: (options) => options.get("showAdvancedFields") === true,
       helperText: "⚠️ TEST SCENARIO 1: This field is required but only visible when 'Show Advanced Fields' is true. Should NOT be treated as mandatory when hidden.",
+    },
+  ],
+});
+
+// Nested required input: seo.pageTitle is required. Used to verify the validation
+// error shows the full path ("SEO > Page Title") and "Click for detail" scrolls to it.
+Builder.registerComponent(ArticleSeoSettings, {
+  name: "Article SEO Settings",
+  friendlyName: "Article SEO Settings",
+  description: "Object input with a required nested field (seo.pageTitle) for testing nested validation paths",
+  inputs: [
+    {
+      name: "seo",
+      friendlyName: "SEO",
+      type: "object",
+      defaultValue: { pageTitle: "", description: "" },
+      subFields: [
+        {
+          name: "pageTitle",
+          friendlyName: "Page Title",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "description",
+          friendlyName: "Description",
+          type: "longText",
+          required: false,
+        },
+      ],
     },
   ],
 });
