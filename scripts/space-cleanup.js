@@ -27,9 +27,13 @@
  *                                 the space's public API key.
  *   DRY_RUN=true        / --dry-run
  *                                 List what would be deleted, delete nothing.
+ *   --debug                      Log archived-query response shapes per model.
  *   --concurrency <n>             Parallel delete requests (default 5).
  *
  * Notes:
+ *   - Archived content entries (invisible to the public content API) are found
+ *     through the query-data API and deleted along with live/draft entries.
+ *   - Archived models are included in the model list and content scan.
  *   - Deleting content/assets is NOT recoverable.
  *   - The space owner (settings.ownerId) is never offered for removal.
  *   - User removal uses whichever removal mutation the Admin API exposes
@@ -43,6 +47,7 @@ import readline from "node:readline/promises";
 
 const ADMIN_API_ENDPOINT = "https://cdn.builder.io/api/v2/admin";
 const CONTENT_API_BASE = "https://cdn.builder.io/api/v3/content";
+const QUERY_DATA_API = "https://cdn.builder.io/api/v1/query-data";
 const WRITE_API_BASE = "https://builder.io/api/v1/write";
 const ASSETS_API_BASE = "https://cdn.builder.io/api/v1/assets";
 const PAGE_LIMIT = 100;
@@ -51,6 +56,7 @@ const args = parseArgs(process.argv.slice(2));
 const PRIVATE_KEY = args.key || process.env.BUILDER_PRIVATE_KEY || "";
 let PUBLIC_KEY = args["public-key"] || process.env.BUILDER_PUBLIC_KEY || "";
 const DRY_RUN = args["dry-run"] === true || process.env.DRY_RUN === "true";
+const DEBUG = args.debug === true || process.env.DEBUG_CLEANUP === "true";
 const CONCURRENCY = Math.max(1, Number(args.concurrency) || 5);
 
 const rl = readline.createInterface({
@@ -162,35 +168,125 @@ async function printOverview(state) {
 
 // ── Content ───────────────────────────────────────────────────────────────────
 
+/**
+ * Lists models including archived ones. The Admin API may hide archived models
+ * by default, so the Model type / `models` args are introspected for an
+ * `archived` field or an include-archived style argument.
+ */
+async function loadModels() {
+  let fields = ["id", "name", "kind"];
+  let argStr = "";
+  try {
+    const info = await graphql(/* GraphQL */ `
+      {
+        modelType: __type(name: "Model") { fields { name } }
+        query: __schema { queryType { fields { name args { name } } } }
+      }
+    `);
+    const modelFields = (info.modelType?.fields ?? []).map((f) => f.name);
+    if (modelFields.includes("archived")) fields.push("archived");
+    const modelsField = info.query?.queryType?.fields?.find((f) => f.name === "models");
+    const archivedArg = modelsField?.args?.find((a) => /archived/i.test(a.name));
+    if (archivedArg) argStr = `(${archivedArg.name}: true)`;
+  } catch {
+    // introspection off: fall back to the plain query
+  }
+  const data = await graphql(`query Models { models${argStr} { ${fields.join(" ")} } }`);
+  const models = data.models ?? [];
+  // Drop dupes by id in case the include-archived arg returns an overlapping set.
+  const seen = new Set();
+  return models.filter((m) => !seen.has(m.id) && seen.add(m.id));
+}
+
 /** Lists every model and collects the entry ids of those that have any. */
 async function countContentByModel() {
-  const data = await graphql(/* GraphQL */ `
-    query Models {
-      models {
-        id
-        name
-        kind
-      }
-    }
-  `);
+  const models = await loadModels();
   // Component-kind models can hold entries too (e.g. figma-imports). The
-  // content API is addressed by name, so duplicate names are scanned once.
-  const seen = new Set();
-  const models = (data.models ?? []).filter((m) => !seen.has(m.name) && seen.add(m.name));
+  // content API is addressed by name, so live entries are scanned once per name;
+  // archived entries are queried by model id so every model is scanned.
+  const seenNames = new Set();
 
   process.stdout.write(`  Scanning ${models.length} models for content`);
   const out = [];
   for (const m of models) {
     process.stdout.write(".");
-    try {
-      const entries = await fetchEntries(m.name);
-      if (entries.length) out.push({ model: m, ids: entries });
-    } catch (err) {
-      console.error(`\n  ⚠️  Could not list "${m.name}": ${err.message}`);
+    const byId = new Map();
+    if (!seenNames.has(m.name)) {
+      seenNames.add(m.name);
+      try {
+        let live;
+        try {
+          live = await fetchEntries(m.name);
+        } catch (err) {
+          // Some models (e.g. private/component ones) 401 on the public content
+          // API; query-data accepts the private key, so retry through it.
+          if (DEBUG) console.error(`\n  [debug] content API failed for "${m.name}" (${err.message}); using query-data`);
+          live = await fetchArchivedEntries(m, null);
+        }
+        live.forEach((e) => byId.set(e.id, { ...e, archived: false }));
+      } catch (err) {
+        console.error(`\n  ⚠️  Could not list "${m.name}": ${err.message}`);
+      }
     }
+    try {
+      (await fetchArchivedEntries(m)).forEach((e) => byId.set(e.id, { ...e, archived: true }));
+    } catch (err) {
+      console.error(`\n  ⚠️  Could not list archived "${m.name}": ${err.message}`);
+    }
+    if (byId.size) out.push({ model: m, ids: [...byId.values()] });
   }
   process.stdout.write("\n");
   return out.sort((a, b) => b.ids.length - a.ids.length);
+}
+
+/** query-data responses vary by endpoint version: array, {results}, {data}, {data:{results}}. */
+function extractList(body) {
+  if (Array.isArray(body)) return body;
+  for (const v of [body?.results, body?.data, body?.data?.results, body?.docs, body?.items]) {
+    if (Array.isArray(v)) return v;
+  }
+  return [];
+}
+
+/** Archived entries are not returned by the content API; use query-data. */
+async function fetchArchivedEntries(model, published = "archived") {
+  const all = [];
+  let offset = 0;
+  while (true) {
+    const url = new URL(QUERY_DATA_API);
+    url.searchParams.set("apiKey", PUBLIC_KEY);
+    url.searchParams.set("collection", "content");
+    if (published) url.searchParams.set("query.published", published);
+    url.searchParams.set("query.modelId", model.id);
+    url.searchParams.set("query.ownerId", PUBLIC_KEY);
+    url.searchParams.set("limit", String(PAGE_LIMIT));
+    url.searchParams.set("offset", String(offset));
+    url.searchParams.set("noTraverse", "true");
+    url.searchParams.set("weakTarget", "true");
+    url.searchParams.set("cachebust", "true");
+    url.searchParams.set("__db", "1");
+    url.searchParams.set("skipVariationsFields", "true");
+    url.searchParams.set("listing", "true");
+    url.searchParams.set(
+      "omit",
+      "data.blocks,data.jsCode,data.tsCode,data.cssCode,data.title,data.localeChildren,data.keywords,data.description"
+    );
+
+    const res = await withRetry(() => fetch(url, { headers: { Authorization: `Bearer ${PRIVATE_KEY}` } }));
+    if (!res.ok) throw new Error(`archived query status ${res.status}: ${await res.text()}`);
+    const body = await res.json();
+    const page = extractList(body);
+    if (DEBUG) {
+      console.error(
+        `\n  [debug] archived ${model.name} (${model.id}) offset=${offset}: status ${res.status}, ` +
+          `shape=${Array.isArray(body) ? "array" : `{${Object.keys(body ?? {}).join(",")}}`}, items=${page.length}`
+      );
+    }
+    all.push(...page.map((e) => ({ id: e.id ?? e._id, name: e.name })).filter((e) => e.id));
+    if (page.length < PAGE_LIMIT) break;
+    offset += page.length;
+  }
+  return all;
 }
 
 async function fetchEntries(modelName) {
@@ -206,7 +302,7 @@ async function fetchEntries(modelName) {
     url.searchParams.set("cachebust", "true");
     url.searchParams.set("fields", "id,name");
 
-    const res = await withRetry(() => fetch(url));
+    const res = await withRetry(() => fetch(url, { headers: { Authorization: `Bearer ${PRIVATE_KEY}` } }));
     if (!res.ok) throw new Error(`status ${res.status}: ${await res.text()}`);
     const page = (await res.json())?.results ?? [];
     all.push(...page.map((e) => ({ id: e.id, name: e.name })));
@@ -221,7 +317,9 @@ async function deleteContentFlow(space, state) {
 
   console.info("\n── MODELS WITH CONTENT ──");
   state.models.forEach((m, i) =>
-    console.info(`  ${String(i + 1).padStart(3)}) ${m.model.name}  (${m.ids.length} entries, kind=${m.model.kind})`)
+    console.info(
+      `  ${String(i + 1).padStart(3)}) ${m.model.name}  (${m.ids.length} entries, ${m.ids.filter((e) => e.archived).length} archived, kind=${m.model.kind}${m.model.archived ? ", ARCHIVED MODEL" : ""})`
+    )
   );
   const picked = await pickFromList(
     "Models to empty (e.g. 1,3,5-7 or 'all', blank to cancel)",
@@ -416,16 +514,7 @@ async function findMutation(namePattern, argPattern) {
 const PROTECTED_MODELS = new Set(["page"]);
 
 async function deleteModelsFlow(space, state) {
-  const data = await graphql(/* GraphQL */ `
-    query AllModels {
-      models {
-        id
-        name
-        kind
-      }
-    }
-  `);
-  const models = (data.models ?? []).filter((m) => !PROTECTED_MODELS.has(m.name));
+  const models = (await loadModels()).filter((m) => !PROTECTED_MODELS.has(m.name));
   if (!models.length) return console.info("No deletable models.");
 
   const mutation = await findMutation(/^(delete|remove)model$/i, /^(id|modelId)$/i);
@@ -440,7 +529,7 @@ async function deleteModelsFlow(space, state) {
   const counts = new Map((state.models ?? []).map((m) => [m.model.id, m.ids.length]));
   console.info("\n── MODELS (page is protected) ──");
   models.forEach((m, i) =>
-    console.info(`  ${String(i + 1).padStart(3)}) ${m.name}  kind=${m.kind}  entries=${counts.get(m.id) ?? 0}  id=${m.id}`)
+    console.info(`  ${String(i + 1).padStart(3)}) ${m.name}  kind=${m.kind}${m.archived ? "  [archived]" : ""}  entries=${counts.get(m.id) ?? 0}  id=${m.id}`)
   );
   console.info("\n⚠️  Deleting a model also removes every entry in it. Empty content first (option 1) if unsure.");
 
